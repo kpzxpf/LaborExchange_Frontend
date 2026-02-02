@@ -28,7 +28,7 @@ export default function RegisterPage() {
 
     const onSubmit = async (data: FormData) => {
         if (!selectedRole) {
-            toast.error("Please select a role");
+            toast.error("Пожалуйста, выберите роль");
             return;
         }
 
@@ -46,21 +46,31 @@ export default function RegisterPage() {
         {
             value: "JOB_SEEKER" as const,
             icon: UserCircle,
-            title: "Job Seeker",
-            description: "I'm looking for job opportunities",
-            features: ["Browse job listings", "Create resumes", "Apply to positions", "Track applications"],
+            title: "Соискатель",
+            description: "Я ищу возможности для трудоустройства",
+            features: [
+                "Просмотр вакансий",
+                "Создание резюме",
+                "Подача заявок на вакансии",
+                "Отслеживание откликов"
+            ],
         },
         {
             value: "EMPLOYER" as const,
             icon: Briefcase,
-            title: "Employer",
-            description: "I'm hiring talent for my company",
-            features: ["Post vacancies", "Manage companies", "Review applications", "Find candidates"],
+            title: "Работодатель",
+            description: "Я нанимаю специалистов для своей компании",
+            features: [
+                "Публикация вакансий",
+                "Управление компаниями",
+                "Просмотр откликов",
+                "Поиск кандидатов"
+            ],
         },
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -74,7 +84,7 @@ export default function RegisterPage() {
                         transition={{ delay: 0.2 }}
                         className="text-4xl font-bold text-gray-900 mb-2"
                     >
-                        Join LaborExchange
+                        Присоединяйтесь к <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">LaborExchange</span>
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
@@ -82,7 +92,7 @@ export default function RegisterPage() {
                         transition={{ delay: 0.3 }}
                         className="text-gray-600"
                     >
-                        Create your account and start your journey
+                        Создайте аккаунт и начните свой путь
                     </motion.p>
                 </div>
 
@@ -95,7 +105,7 @@ export default function RegisterPage() {
                         className="mb-8"
                     >
                         <h2 className="text-2xl font-semibold text-gray-900 text-center mb-6">
-                            What brings you here?
+                            Что привело вас сюда?
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {roleOptions.map((option) => (
@@ -106,17 +116,17 @@ export default function RegisterPage() {
                                 >
                                     <Card
                                         hover
-                                        className={`cursor-pointer transition-all ${
+                                        className={`cursor-pointer transition-all shadow-md hover:shadow-xl ${
                                             selectedRole === option.value
-                                                ? "ring-2 ring-primary-500 border-primary-500"
-                                                : "hover:border-primary-300"
+                                                ? "ring-2 ring-blue-500 border-blue-500 bg-blue-50"
+                                                : "hover:border-blue-300 bg-white"
                                         }`}
                                         onClick={() => setSelectedRole(option.value)}
                                     >
                                         <CardContent className="p-6">
                                             <div className="flex items-start space-x-4">
-                                                <div className="bg-primary-100 p-3 rounded-lg">
-                                                    <option.icon className="h-8 w-8 text-primary-600" />
+                                                <div className="bg-gradient-to-br from-blue-100 to-purple-100 p-3 rounded-lg shadow-md">
+                                                    <option.icon className="h-8 w-8 text-blue-600" />
                                                 </div>
                                                 <div className="flex-1">
                                                     <h3 className="text-xl font-semibold text-gray-900 mb-1">
@@ -150,14 +160,14 @@ export default function RegisterPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <Card>
-                            <CardHeader>
+                        <Card className="shadow-xl">
+                            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <CardTitle>Complete Your Registration</CardTitle>
+                                        <CardTitle>Завершите регистрацию</CardTitle>
                                         <CardDescription>
-                                            Registering as:{" "}
-                                            <span className="font-semibold text-primary-600">
+                                            Регистрируетесь как:{" "}
+                                            <span className="font-semibold text-blue-600">
                         {roleOptions.find((r) => r.value === selectedRole)?.title}
                       </span>
                                         </CardDescription>
@@ -167,93 +177,93 @@ export default function RegisterPage() {
                                         size="sm"
                                         onClick={() => setSelectedRole(null)}
                                     >
-                                        Change Role
+                                        Изменить роль
                                     </Button>
                                 </div>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="bg-white">
                                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                     <Input
-                                        label="Username"
-                                        placeholder="johndoe"
+                                        label="Имя пользователя"
+                                        placeholder="ivan_petrov"
                                         required
                                         error={errors.username?.message}
                                         {...register("username", {
-                                            required: "Username is required",
+                                            required: "Имя пользователя обязательно",
                                             minLength: {
                                                 value: 3,
-                                                message: "Username must be at least 3 characters",
+                                                message: "Имя пользователя должно содержать минимум 3 символа",
                                             },
                                             maxLength: {
                                                 value: 32,
-                                                message: "Username must be at most 32 characters",
+                                                message: "Имя пользователя должно содержать максимум 32 символа",
                                             },
                                         })}
                                     />
 
                                     <Input
-                                        label="Email"
+                                        label="Электронная почта"
                                         type="email"
-                                        placeholder="john@example.com"
+                                        placeholder="ivan@example.com"
                                         required
                                         error={errors.email?.message}
                                         {...register("email", {
-                                            required: "Email is required",
+                                            required: "Электронная почта обязательна",
                                             pattern: {
                                                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                message: "Invalid email address",
+                                                message: "Неверный формат электронной почты",
                                             },
                                         })}
                                     />
 
                                     <Input
-                                        label="Phone Number"
+                                        label="Номер телефона"
                                         type="tel"
-                                        placeholder="+1234567890"
+                                        placeholder="+79001234567"
                                         required
                                         error={errors.phone?.message}
                                         {...register("phone", {
-                                            required: "Phone number is required",
+                                            required: "Номер телефона обязателен",
                                             pattern: {
                                                 value: /^\+?[0-9]{10,15}$/,
-                                                message: "Phone number must be 10-15 digits",
+                                                message: "Номер телефона должен содержать 10-15 цифр",
                                             },
                                         })}
                                     />
 
                                     <Input
-                                        label="Password"
+                                        label="Пароль"
                                         type="password"
                                         placeholder="••••••••"
                                         required
                                         error={errors.password?.message}
                                         {...register("password", {
-                                            required: "Password is required",
+                                            required: "Пароль обязателен",
                                             minLength: {
                                                 value: 8,
-                                                message: "Password must be at least 8 characters",
+                                                message: "Пароль должен содержать минимум 8 символов",
                                             },
                                             maxLength: {
                                                 value: 64,
-                                                message: "Password must be at most 64 characters",
+                                                message: "Пароль должен содержать максимум 64 символа",
                                             },
                                         })}
                                     />
 
-                                    <Button type="submit" className="w-full" isLoading={isLoading}>
-                                        Create Account
+                                    <Button type="submit" className="w-full shadow-md hover:shadow-lg transition-shadow" isLoading={isLoading}>
+                                        Создать аккаунт
                                         <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 </form>
 
                                 <div className="mt-6 text-center">
                                     <p className="text-sm text-gray-600">
-                                        Already have an account?{" "}
+                                        Уже есть аккаунт?{" "}
                                         <Link
                                             href="/auth/login"
-                                            className="text-primary-600 hover:text-primary-700 font-medium"
+                                            className="text-blue-600 hover:text-blue-700 font-medium"
                                         >
-                                            Sign in
+                                            Войти
                                         </Link>
                                     </p>
                                 </div>

@@ -46,7 +46,7 @@ export default function EmployerDashboard() {
                 setCompanies(companiesRes);
                 setStatistics(statsRes);
             } catch (error) {
-                toast.error("Failed to load dashboard data");
+                toast.error("Не удалось загрузить данные панели управления");
             } finally {
                 setIsLoading(false);
             }
@@ -59,36 +59,36 @@ export default function EmployerDashboard() {
 
     if (loading || isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
             </div>
         );
     }
 
     const stats = [
         {
-            title: "Active Vacancies",
+            title: "Активные вакансии",
             value: vacancies.length,
             icon: Briefcase,
             color: "text-blue-600",
             bgColor: "bg-blue-100",
         },
         {
-            title: "Companies",
+            title: "Компании",
             value: companies.length,
             icon: Building2,
             color: "text-green-600",
             bgColor: "bg-green-100",
         },
         {
-            title: "Total Applications",
+            title: "Всего откликов",
             value: statistics?.totalApplications || 0,
             icon: Users,
             color: "text-purple-600",
             bgColor: "bg-purple-100",
         },
         {
-            title: "Active Applications",
+            title: "Активных откликов",
             value: statistics?.activeApplications || 0,
             icon: TrendingUp,
             color: "text-orange-600",
@@ -97,7 +97,7 @@ export default function EmployerDashboard() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <motion.div
@@ -106,10 +106,10 @@ export default function EmployerDashboard() {
                     className="mb-8"
                 >
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        Employer Dashboard
+                        Панель управления работодателя
                     </h1>
                     <p className="text-gray-600">
-                        Manage your vacancies, companies, and applications
+                        Управляйте вакансиями, компаниями и откликами
                     </p>
                 </motion.div>
 
@@ -122,7 +122,7 @@ export default function EmployerDashboard() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.1 }}
                         >
-                            <Card hover>
+                            <Card hover className="shadow-md hover:shadow-xl transition-shadow bg-white">
                                 <CardContent className="p-6">
                                     <div className="flex items-center justify-between">
                                         <div>
@@ -133,7 +133,7 @@ export default function EmployerDashboard() {
                                                 {stat.value}
                                             </p>
                                         </div>
-                                        <div className={`${stat.bgColor} p-3 rounded-lg`}>
+                                        <div className={`${stat.bgColor} p-3 rounded-lg shadow-sm`}>
                                             <stat.icon className={`h-6 w-6 ${stat.color}`} />
                                         </div>
                                     </div>
@@ -150,29 +150,29 @@ export default function EmployerDashboard() {
                     transition={{ delay: 0.4 }}
                     className="mb-8"
                 >
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Quick Actions</CardTitle>
-                            <CardDescription>Commonly used actions</CardDescription>
+                    <Card className="shadow-lg bg-white">
+                        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
+                            <CardTitle>Быстрые действия</CardTitle>
+                            <CardDescription>Часто используемые действия</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <Link href="/employer/vacancies/create">
-                                    <Button className="w-full" size="lg">
+                                    <Button className="w-full shadow-md hover:shadow-lg transition-shadow" size="lg">
                                         <Plus className="h-5 w-5 mr-2" />
-                                        Post New Vacancy
+                                        Опубликовать вакансию
                                     </Button>
                                 </Link>
                                 <Link href="/employer/companies/create">
-                                    <Button variant="secondary" className="w-full" size="lg">
+                                    <Button variant="secondary" className="w-full shadow-md hover:shadow-lg transition-shadow" size="lg">
                                         <Building2 className="h-5 w-5 mr-2" />
-                                        Add Company
+                                        Добавить компанию
                                     </Button>
                                 </Link>
                                 <Link href="/employer/applications">
-                                    <Button variant="outline" className="w-full" size="lg">
+                                    <Button variant="outline" className="w-full shadow-md hover:shadow-lg transition-shadow" size="lg">
                                         <FileText className="h-5 w-5 mr-2" />
-                                        View Applications
+                                        Просмотреть отклики
                                     </Button>
                                 </Link>
                             </div>
@@ -186,16 +186,16 @@ export default function EmployerDashboard() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
                 >
-                    <Card>
-                        <CardHeader>
+                    <Card className="shadow-lg bg-white">
+                        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <CardTitle>Recent Vacancies</CardTitle>
-                                    <CardDescription>Your latest job postings</CardDescription>
+                                    <CardTitle>Последние вакансии</CardTitle>
+                                    <CardDescription>Ваши последние публикации</CardDescription>
                                 </div>
                                 <Link href="/employer/vacancies">
-                                    <Button variant="ghost" size="sm">
-                                        View All
+                                    <Button variant="ghost" size="sm" className="hover:bg-white">
+                                        Смотреть все
                                     </Button>
                                 </Link>
                             </div>
@@ -203,10 +203,13 @@ export default function EmployerDashboard() {
                         <CardContent>
                             {vacancies.length > 0 ? (
                                 <div className="space-y-4">
-                                    {vacancies.map((vacancy) => (
-                                        <div
+                                    {vacancies.map((vacancy, index) => (
+                                        <motion.div
                                             key={vacancy.id}
-                                            className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors"
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: index * 0.1 }}
+                                            className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all bg-white"
                                         >
                                             <div className="flex-1">
                                                 <h4 className="font-semibold text-gray-900 mb-1">
@@ -217,32 +220,32 @@ export default function EmployerDashboard() {
                                                 </p>
                                                 {vacancy.salary && (
                                                     <p className="text-sm text-green-600 font-medium mt-1">
-                                                        ${vacancy.salary.toLocaleString()}
+                                                        {vacancy.salary.toLocaleString()} ₽
                                                     </p>
                                                 )}
                                             </div>
                                             <Link href={`/employer/vacancies/${vacancy.id}`}>
-                                                <Button variant="ghost" size="sm">
+                                                <Button variant="ghost" size="sm" className="hover:bg-blue-50">
                                                     <Eye className="h-4 w-4 mr-2" />
-                                                    View
+                                                    Посмотреть
                                                 </Button>
                                             </Link>
-                                        </div>
+                                        </motion.div>
                                     ))}
                                 </div>
                             ) : (
                                 <div className="text-center py-12">
                                     <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                                     <h3 className="text-lg font-medium text-gray-900 mb-2">
-                                        No vacancies yet
+                                        Пока нет вакансий
                                     </h3>
                                     <p className="text-gray-600 mb-4">
-                                        Start by creating your first job posting
+                                        Начните с создания своей первой публикации
                                     </p>
                                     <Link href="/employer/vacancies/create">
-                                        <Button>
+                                        <Button className="shadow-md hover:shadow-lg transition-shadow">
                                             <Plus className="h-4 w-4 mr-2" />
-                                            Create Vacancy
+                                            Создать вакансию
                                         </Button>
                                     </Link>
                                 </div>

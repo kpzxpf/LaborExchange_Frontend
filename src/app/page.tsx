@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Briefcase, Users, TrendingUp, CheckCircle, ArrowRight } from "lucide-react";
+import { Briefcase, Users, TrendingUp, CheckCircle, ArrowRight, Star, Award, Shield } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Card, { CardContent } from "@/components/ui/Card";
 
@@ -10,109 +10,136 @@ export default function HomePage() {
     const features = [
         {
             icon: Briefcase,
-            title: "Find Your Dream Job",
-            description: "Browse thousands of job listings from top companies",
+            title: "Найдите работу мечты",
+            description: "Тысячи вакансий от ведущих компаний в одном месте",
         },
         {
             icon: Users,
-            title: "Connect with Talent",
-            description: "Discover skilled professionals for your organization",
+            title: "Найдите талантливых специалистов",
+            description: "Откройте для себя квалифицированных профессионалов для вашей компании",
         },
         {
             icon: TrendingUp,
-            title: "Career Growth",
-            description: "Access resources to advance your professional journey",
+            title: "Развивайте карьеру",
+            description: "Получайте доступ к ресурсам для профессионального роста",
         },
     ];
 
     const benefits = [
-        "Easy application process",
-        "Direct communication with employers",
-        "Resume builder and management",
-        "Real-time notifications",
-        "Secure and trusted platform",
+        "Простой процесс подачи заявок",
+        "Прямое общение с работодателями",
+        "Конструктор и управление резюме",
+        "Уведомления в реальном времени",
+        "Безопасная и надежная платформа",
+    ];
+
+    const stats = [
+        { icon: Users, value: "10,000+", label: "Активных пользователей" },
+        { icon: Briefcase, value: "5,000+", label: "Открытых вакансий" },
+        { icon: Award, value: "95%", label: "Успешных размещений" },
+        { icon: Shield, value: "100%", label: "Безопасность данных" },
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white">
-            {/* Hero Section */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="text-center"
-                >
-                    <motion.h1
-                        className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 0.8 }}
-                    >
-                        Find Your Perfect{" "}
-                        <span className="text-primary-600">Career Match</span>
-                    </motion.h1>
+        <div className="min-h-screen">
+            {/* Hero Section с улучшенным фоном */}
+            <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden">
+                {/* Декоративные элементы */}
+                <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
+                    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
+                </div>
 
-                    <motion.p
-                        className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.8 }}
-                    >
-                        Connect job seekers with employers. Build your career or find the perfect candidate.
-                    </motion.p>
-
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
                     <motion.div
-                        className="flex flex-col sm:flex-row gap-4 justify-center"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6, duration: 0.8 }}
+                        transition={{ duration: 0.8 }}
+                        className="text-center"
                     >
-                        <Link href="/auth/register">
-                            <Button size="lg" className="group">
-                                Get Started
-                                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                            </Button>
-                        </Link>
-                        <Link href="/auth/login">
-                            <Button variant="outline" size="lg">
-                                Sign In
-                            </Button>
-                        </Link>
-                    </motion.div>
-                </motion.div>
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.2, duration: 0.5 }}
+                            className="inline-flex items-center px-4 py-2 mb-6 bg-blue-100 rounded-full"
+                        >
+                            <Star className="h-4 w-4 text-yellow-500 mr-2" />
+                            <span className="text-sm font-medium text-gray-700">
+                                Надежная платформа для поиска работы
+                            </span>
+                        </motion.div>
 
-                {/* Animated Background Elements */}
-                <motion.div
-                    className="absolute top-40 left-10 w-72 h-72 bg-primary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30"
-                    animate={{
-                        scale: [1, 1.2, 1],
-                        x: [0, 50, 0],
-                        y: [0, 30, 0],
-                    }}
-                    transition={{
-                        duration: 8,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                    }}
-                />
-                <motion.div
-                    className="absolute top-60 right-10 w-72 h-72 bg-secondary-200 rounded-full mix-blend-multiply filter blur-xl opacity-30"
-                    animate={{
-                        scale: [1, 1.3, 1],
-                        x: [0, -50, 0],
-                        y: [0, -30, 0],
-                    }}
-                    transition={{
-                        duration: 10,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                    }}
-                />
+                        <motion.h1
+                            className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3, duration: 0.8 }}
+                        >
+                            Найдите идеальное{" "}
+                            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                совпадение
+                            </span>
+                            <br />
+                            для вашей карьеры
+                        </motion.h1>
+
+                        <motion.p
+                            className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4, duration: 0.8 }}
+                        >
+                            Соединяем соискателей с работодателями. Развивайте карьеру или найдите идеального кандидата.
+                        </motion.p>
+
+                        <motion.div
+                            className="flex flex-col sm:flex-row gap-4 justify-center"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6, duration: 0.8 }}
+                        >
+                            <Link href="/auth/register">
+                                <Button size="lg" className="group shadow-lg hover:shadow-xl transition-shadow">
+                                    Начать работу
+                                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                </Button>
+                            </Link>
+                            <Link href="/auth/login">
+                                <Button variant="outline" size="lg" className="shadow-md hover:shadow-lg transition-shadow">
+                                    Войти в систему
+                                </Button>
+                            </Link>
+                        </motion.div>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* Stats Section */}
+            <section className="py-16 bg-white border-b">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                        {stats.map((stat, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.1, duration: 0.5 }}
+                                className="text-center"
+                            >
+                                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-3">
+                                    <stat.icon className="h-6 w-6 text-blue-600" />
+                                </div>
+                                <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
+                                <div className="text-sm text-gray-600">{stat.label}</div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
             </section>
 
             {/* Features Section */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-gray-50">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -121,10 +148,10 @@ export default function HomePage() {
                     className="text-center mb-16"
                 >
                     <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                        Why Choose LaborExchange?
+                        Почему выбирают LaborExchange?
                     </h2>
                     <p className="text-xl text-gray-600">
-                        Everything you need to succeed in your career journey
+                        Всё необходимое для успеха в вашей карьере
                     </p>
                 </motion.div>
 
@@ -137,10 +164,10 @@ export default function HomePage() {
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.2, duration: 0.8 }}
                         >
-                            <Card hover className="h-full">
+                            <Card hover className="h-full bg-white shadow-md hover:shadow-xl transition-shadow">
                                 <CardContent className="p-8 text-center">
-                                    <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-6">
-                                        <feature.icon className="h-8 w-8 text-primary-600" />
+                                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6">
+                                        <feature.icon className="h-8 w-8 text-blue-600" />
                                     </div>
                                     <h3 className="text-xl font-semibold text-gray-900 mb-3">
                                         {feature.title}
@@ -154,7 +181,7 @@ export default function HomePage() {
             </section>
 
             {/* Benefits Section */}
-            <section className="bg-gray-50 py-20">
+            <section className="bg-white py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <motion.div
@@ -164,10 +191,10 @@ export default function HomePage() {
                             transition={{ duration: 0.8 }}
                         >
                             <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                                Built for Success
+                                Создано для успеха
                             </h2>
                             <p className="text-lg text-gray-600 mb-8">
-                                Our platform provides all the tools you need to succeed in your job search or hiring process.
+                                Наша платформа предоставляет все инструменты, необходимые для успеха в поиске работы или найме сотрудников.
                             </p>
                             <ul className="space-y-4">
                                 {benefits.map((benefit, index) => (
@@ -180,7 +207,7 @@ export default function HomePage() {
                                         className="flex items-center space-x-3"
                                     >
                                         <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
-                                        <span className="text-gray-700">{benefit}</span>
+                                        <span className="text-gray-700 font-medium">{benefit}</span>
                                     </motion.li>
                                 ))}
                             </ul>
@@ -193,7 +220,12 @@ export default function HomePage() {
                             transition={{ duration: 0.8 }}
                             className="relative"
                         >
-                            <div className="aspect-square bg-gradient-to-br from-primary-400 to-secondary-400 rounded-2xl shadow-2xl" />
+                            <div className="aspect-square bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 rounded-2xl shadow-2xl flex items-center justify-center">
+                                <div className="text-center text-white p-8">
+                                    <Briefcase className="h-24 w-24 mx-auto mb-4 opacity-80" />
+                                    <p className="text-2xl font-bold">Ваша карьера начинается здесь</p>
+                                </div>
+                            </div>
                         </motion.div>
                     </div>
                 </div>
@@ -206,17 +238,17 @@ export default function HomePage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8 }}
-                    className="bg-gradient-to-r from-primary-600 to-secondary-600 rounded-2xl shadow-xl p-12 text-center"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-2xl p-12 text-center"
                 >
                     <h2 className="text-4xl font-bold text-white mb-4">
-                        Ready to Get Started?
+                        Готовы начать?
                     </h2>
                     <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-                        Join thousands of job seekers and employers finding their perfect match
+                        Присоединяйтесь к тысячам соискателей и работодателей, которые нашли своё идеальное совпадение
                     </p>
                     <Link href="/auth/register">
-                        <Button size="lg" variant="outline" className="bg-white text-primary-600 hover:bg-gray-100 border-white">
-                            Create Free Account
+                        <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-gray-100 border-white shadow-lg hover:shadow-xl transition-shadow">
+                            Создать бесплатный аккаунт
                             <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     </Link>
