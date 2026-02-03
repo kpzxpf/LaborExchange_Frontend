@@ -72,16 +72,16 @@ export default function EmployerVacanciesPage() {
                 >
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                            My Vacancies
+                            Мои вакансии
                         </h1>
                         <p className="text-gray-600">
-                            Manage your job postings
+                            Управление объявлениями о вакансиях
                         </p>
                     </div>
                     <Link href="/employer/vacancies/create">
                         <Button>
                             <Plus className="h-4 w-4 mr-2" />
-                            Post New Vacancy
+                            Разместить новую вакансию
                         </Button>
                     </Link>
                 </motion.div>
@@ -127,7 +127,7 @@ export default function EmployerVacanciesPage() {
                                                 <Link href={`/employer/vacancies/${vacancy.id}`}>
                                                     <Button variant="outline" size="sm">
                                                         <Eye className="h-4 w-4 mr-2" />
-                                                        View
+                                                        Вид
                                                     </Button>
                                                 </Link>
                                                 <Button
@@ -153,15 +153,15 @@ export default function EmployerVacanciesPage() {
                             <CardContent className="p-12 text-center">
                                 <Briefcase className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                    No vacancies yet
+                                    Вакансий пока нет
                                 </h3>
                                 <p className="text-gray-600 mb-6">
-                                    Create your first job posting to start hiring
+                                    Создайте первое объявление о вакансии, чтобы начать набор персонала
                                 </p>
                                 <Link href="/employer/vacancies/create">
                                     <Button>
                                         <Plus className="h-4 w-4 mr-2" />
-                                        Post Your First Vacancy
+                                        Разместите свою первую вакансию
                                     </Button>
                                 </Link>
                             </CardContent>

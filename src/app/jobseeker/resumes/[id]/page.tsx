@@ -47,7 +47,7 @@ export default function ViewResumePage() {
             setEducation(educationData);
             setSkills(skillsData);
         } catch (error) {
-            toast.error("Failed to load resume");
+            toast.error("Не удалось загрузить резюме");
             router.push("/jobseeker/resumes");
         } finally {
             setIsLoading(false);
@@ -67,7 +67,6 @@ export default function ViewResumePage() {
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -76,7 +75,7 @@ export default function ViewResumePage() {
                     <Link href="/jobseeker/resumes">
                         <Button variant="ghost" size="sm">
                             <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Resumes
+                            Назад к списку
                         </Button>
                     </Link>
 
@@ -84,13 +83,12 @@ export default function ViewResumePage() {
                         <Link href={`/jobseeker/resumes/${resume.id}/edit`}>
                             <Button variant="outline" size="sm">
                                 <Edit className="h-4 w-4 mr-2" />
-                                Edit Resume
+                                Редактировать
                             </Button>
                         </Link>
                     )}
                 </motion.div>
 
-                {/* Resume Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -120,7 +118,7 @@ export default function ViewResumePage() {
                                 {resume.experienceYears !== undefined && (
                                     <div className="flex items-center text-gray-700">
                                         <Calendar className="h-5 w-5 mr-3 text-primary-600" />
-                                        <span>{resume.experienceYears} years of experience</span>
+                                        <span>Опыт работы: {resume.experienceYears} лет</span>
                                     </div>
                                 )}
                             </div>
@@ -128,7 +126,7 @@ export default function ViewResumePage() {
                             {resume.summary && (
                                 <div className="pt-6 border-t">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                                        Professional Summary
+                                        Профессиональное резюме
                                     </h3>
                                     <p className="text-gray-700 whitespace-pre-wrap">
                                         {resume.summary}
@@ -139,7 +137,6 @@ export default function ViewResumePage() {
                     </Card>
                 </motion.div>
 
-                {/* Education */}
                 {education.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -151,7 +148,7 @@ export default function ViewResumePage() {
                             <CardHeader>
                                 <div className="flex items-center">
                                     <GraduationCap className="h-6 w-6 text-primary-600 mr-3" />
-                                    <CardTitle>Education</CardTitle>
+                                    <CardTitle>Образование</CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent>
@@ -171,7 +168,7 @@ export default function ViewResumePage() {
                                                 {edu.fieldOfStudy}
                                             </p>
                                             <p className="text-sm text-gray-500 mt-2">
-                                                {edu.startYear} - {edu.endYear || "Present"}
+                                                {edu.startYear} — {edu.endYear || "По настоящее время"}
                                             </p>
                                         </div>
                                     ))}
@@ -181,7 +178,6 @@ export default function ViewResumePage() {
                     </motion.div>
                 )}
 
-                {/* Skills */}
                 {skills.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -192,7 +188,7 @@ export default function ViewResumePage() {
                             <CardHeader>
                                 <div className="flex items-center">
                                     <Award className="h-6 w-6 text-primary-600 mr-3" />
-                                    <CardTitle>Skills</CardTitle>
+                                    <CardTitle>Навыки</CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent>
@@ -202,8 +198,8 @@ export default function ViewResumePage() {
                                             key={skill.id}
                                             className="px-4 py-2 bg-primary-100 text-primary-700 rounded-full text-sm font-medium"
                                         >
-                      {skill.name}
-                    </span>
+                                            {skill.name}
+                                        </span>
                                     ))}
                                 </div>
                             </CardContent>

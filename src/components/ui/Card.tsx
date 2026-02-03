@@ -11,7 +11,6 @@ interface CardProps extends HTMLMotionProps<"div"> {
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
     ({ className, hover = false, children, ...props }, ref) => {
-        // Определяем настройки анимации заранее
         const hoverAnimation = hover
             ? {
                 whileHover: { y: -4, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" },

@@ -42,7 +42,6 @@ export default function VacancyDetailPage() {
             const vacancyData = await vacancyService.getById(vacancyId);
             setVacancy(vacancyData);
 
-            // Загружаем резюме только для соискателей
             if (userRole === "JOB_SEEKER" && userId) {
                 const resumesData = await resumeService.getByUser(userId);
                 setResumes(resumesData);
@@ -51,7 +50,7 @@ export default function VacancyDetailPage() {
                 }
             }
         } catch (error) {
-            toast.error("Failed to load vacancy");
+            toast.error("Не удалось загрузить вакансию");
             router.back();
         } finally {
             setIsLoading(false);
@@ -60,7 +59,7 @@ export default function VacancyDetailPage() {
 
     const handleApply = async () => {
         if (!vacancy || !userId || !selectedResumeId) {
-            toast.error("Please select a resume");
+            toast.error("Пожалуйста, выберите резюме");
             return;
         }
 
@@ -74,7 +73,7 @@ export default function VacancyDetailPage() {
             };
 
             await applicationService.create(applicationData);
-            toast.success("Application submitted successfully!");
+            toast.success("Отклик успешно отправлен!");
             setShowApplyModal(false);
             router.push("/jobseeker/applications");
         } catch (error) {
@@ -97,7 +96,6 @@ export default function VacancyDetailPage() {
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -106,12 +104,11 @@ export default function VacancyDetailPage() {
                     <Link href={userRole === "JOB_SEEKER" ? "/jobseeker/vacancies" : "/employer/vacancies"}>
                         <Button variant="ghost" size="sm">
                             <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Vacancies
+                            Назад к вакансиям
                         </Button>
                     </Link>
                 </motion.div>
 
-                {/* Vacancy Details */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -132,14 +129,14 @@ export default function VacancyDetailPage() {
                                 {vacancy.salary && vacancy.salary > 0 && (
                                     <div className="flex items-center text-green-600 font-semibold">
                                         <DollarSign className="h-5 w-5 mr-1" />
-                                        <span>${vacancy.salary.toLocaleString()}</span>
+                                        <span>{vacancy.salary.toLocaleString()} ₽</span>
                                     </div>
                                 )}
                             </div>
 
                             <div className="pt-6 border-t">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                                    Job Description
+                                    Описание вакансии
                                 </h3>
                                 <p className="text-gray-700 whitespace-pre-wrap">
                                     {vacancy.description}
@@ -155,18 +152,18 @@ export default function VacancyDetailPage() {
                                         disabled={resumes.length === 0}
                                     >
                                         <Send className="h-5 w-5 mr-2" />
-                                        Apply for this Position
+                                        Откликнуться на вакансию
                                     </Button>
                                     {resumes.length === 0 && (
                                         <p className="text-center text-sm text-gray-600 mt-3">
-                                            You need to{" "}
+                                            Вам необходимо{" "}
                                             <Link
                                                 href="/jobseeker/resumes/create"
                                                 className="text-primary-600 hover:text-primary-700 font-medium"
                                             >
-                                                create a resume
+                                                создать резюме
                                             </Link>{" "}
-                                            before applying
+                                            перед тем, как откликаться
                                         </p>
                                     )}
                                 </div>
@@ -175,7 +172,6 @@ export default function VacancyDetailPage() {
                     </Card>
                 </motion.div>
 
-                {/* Apply Modal */}
                 {showApplyModal && (
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -191,13 +187,13 @@ export default function VacancyDetailPage() {
                         >
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Apply to {vacancy.title}</CardTitle>
+                                    <CardTitle>Отклик на: {vacancy.title}</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Select Resume
+                                                Выберите резюме
                                             </label>
                                             <select
                                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -219,7 +215,7 @@ export default function VacancyDetailPage() {
                                                 isLoading={isApplying}
                                             >
                                                 <Send className="h-4 w-4 mr-2" />
-                                                Submit Application
+                                                Отправить
                                             </Button>
                                             <Button
                                                 variant="outline"
@@ -227,7 +223,7 @@ export default function VacancyDetailPage() {
                                                 onClick={() => setShowApplyModal(false)}
                                                 disabled={isApplying}
                                             >
-                                                Cancel
+                                                Отмена
                                             </Button>
                                         </div>
                                     </div>

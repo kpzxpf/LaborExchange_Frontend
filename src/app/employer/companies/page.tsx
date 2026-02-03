@@ -30,7 +30,7 @@ export default function CreateCompanyPage() {
         setIsLoading(true);
         try {
             await companyService.create(data);
-            toast.success("Company created successfully!");
+            toast.success("Компания успешно создана!");
             router.push("/employer/companies");
         } catch (error) {
             toast.error(handleApiError(error));
@@ -50,7 +50,7 @@ export default function CreateCompanyPage() {
                     <Link href="/employer/companies">
                         <Button variant="ghost" size="sm">
                             <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Companies
+                            Вернуться к компаниям
                         </Button>
                     </Link>
                 </motion.div>
@@ -62,43 +62,43 @@ export default function CreateCompanyPage() {
                 >
                     <Card>
                         <CardHeader>
-                            <CardTitle>Create New Company</CardTitle>
+                            <CardTitle>Создание новой компании</CardTitle>
                             <CardDescription>
-                                Add a company profile to associate with your job postings
+                                Добавьте профиль компании, чтобы связать его с вашими вакансиями
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                                 <Input
-                                    label="Company Name"
-                                    placeholder="e.g. Tech Innovations Inc."
+                                    label="Название компании"
+                                    placeholder="Например: Техно Инновации"
                                     required
                                     error={errors.name?.message}
                                     {...register("name", {
-                                        required: "Company name is required",
+                                        required: "Название компании обязательно",
                                         minLength: {
                                             value: 2,
-                                            message: "Name must be at least 2 characters",
+                                            message: "Название должно содержать минимум 2 символа",
                                         },
                                         maxLength: {
                                             value: 100,
-                                            message: "Name must be at most 100 characters",
+                                            message: "Название должно содержать не более 100 символов",
                                         },
                                     })}
                                 />
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Description
+                                        Описание
                                     </label>
                                     <textarea
                                         rows={4}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                        placeholder="Tell us about your company..."
+                                        placeholder="Расскажите о вашей компании..."
                                         {...register("description", {
                                             maxLength: {
                                                 value: 2000,
-                                                message: "Description must be at most 2000 characters",
+                                                message: "Описание должно содержать не более 2000 символов",
                                             },
                                         })}
                                     />
@@ -110,52 +110,52 @@ export default function CreateCompanyPage() {
                                 </div>
 
                                 <Input
-                                    label="Location"
-                                    placeholder="e.g. San Francisco, CA"
+                                    label="Местоположение"
+                                    placeholder="Например: Москва, Россия"
                                     required
                                     error={errors.location?.message}
                                     {...register("location", {
-                                        required: "Location is required",
+                                        required: "Местоположение обязательно",
                                     })}
                                 />
 
                                 <Input
-                                    label="Email"
+                                    label="Электронная почта"
                                     type="email"
                                     placeholder="contact@company.com"
                                     required
                                     error={errors.email?.message}
                                     {...register("email", {
-                                        required: "Email is required",
+                                        required: "Email обязателен",
                                         pattern: {
                                             value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                            message: "Invalid email address",
+                                            message: "Некорректный адрес почты",
                                         },
                                     })}
                                 />
 
                                 <Input
-                                    label="Phone Number"
+                                    label="Номер телефона"
                                     type="tel"
-                                    placeholder="+1234567890"
+                                    placeholder="+7 (999) 000-00-00"
                                     error={errors.phoneNumber?.message}
                                     {...register("phoneNumber", {
                                         pattern: {
                                             value: /^(\+7|8|\+380|\+375)\d{9,11}$/,
-                                            message: "Invalid phone number format",
+                                            message: "Некорректный формат номера телефона",
                                         },
                                     })}
                                 />
 
                                 <Input
-                                    label="Website"
+                                    label="Сайт"
                                     type="url"
                                     placeholder="https://www.company.com"
                                     error={errors.website?.message}
                                     {...register("website", {
                                         pattern: {
                                             value: /^https?:\/\/.+/,
-                                            message: "Website must be a valid URL",
+                                            message: "Сайт должен быть валидным URL адресом",
                                         },
                                     })}
                                 />
@@ -167,11 +167,11 @@ export default function CreateCompanyPage() {
                                         isLoading={isLoading}
                                     >
                                         <Save className="h-4 w-4 mr-2" />
-                                        Create Company
+                                        Создать компанию
                                     </Button>
                                     <Link href="/employer/companies" className="flex-1">
                                         <Button type="button" variant="outline" className="w-full">
-                                            Cancel
+                                            Отмена
                                         </Button>
                                     </Link>
                                 </div>

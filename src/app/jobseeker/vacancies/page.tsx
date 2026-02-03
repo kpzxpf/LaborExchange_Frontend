@@ -29,7 +29,7 @@ export default function JobSeekerVacanciesPage() {
             setVacancies(response.content);
             setTotalPages(response.totalPages);
         } catch (error) {
-            toast.error("Failed to load vacancies");
+            toast.error("Не удалось загрузить вакансии");
         } finally {
             setIsLoading(false);
         }
@@ -44,21 +44,19 @@ export default function JobSeekerVacanciesPage() {
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-8"
                 >
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        Find Your Dream Job
+                        Найдите работу своей мечты
                     </h1>
                     <p className="text-gray-600">
-                        Browse {vacancies.length} available positions
+                        Просмотрите {vacancies.length} доступных позиций
                     </p>
                 </motion.div>
 
-                {/* Search */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -71,7 +69,7 @@ export default function JobSeekerVacanciesPage() {
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="Search by title, company, or description..."
+                                    placeholder="Поиск по названию, компании или описанию..."
                                     className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -81,14 +79,12 @@ export default function JobSeekerVacanciesPage() {
                     </Card>
                 </motion.div>
 
-                {/* Loading */}
                 {isLoading ? (
                     <div className="flex justify-center items-center py-20">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
                     </div>
                 ) : (
                     <>
-                        {/* Vacancies List */}
                         <div className="space-y-4 mb-8">
                             {filteredVacancies.length > 0 ? (
                                 filteredVacancies.map((vacancy, index) => (
@@ -115,7 +111,7 @@ export default function JobSeekerVacanciesPage() {
                                                             {vacancy.salary && vacancy.salary > 0 && (
                                                                 <div className="flex items-center text-green-600 font-medium">
                                                                     <DollarSign className="h-4 w-4 mr-1" />
-                                                                    ${vacancy.salary.toLocaleString()}
+                                                                    {vacancy.salary.toLocaleString()} ₽
                                                                 </div>
                                                             )}
                                                         </div>
@@ -129,7 +125,7 @@ export default function JobSeekerVacanciesPage() {
                                                         <Link href={`/jobseeker/vacancies/${vacancy.id}`}>
                                                             <Button>
                                                                 <Eye className="h-4 w-4 mr-2" />
-                                                                View Details
+                                                                Подробнее
                                                             </Button>
                                                         </Link>
                                                     </div>
@@ -143,19 +139,18 @@ export default function JobSeekerVacanciesPage() {
                                     <CardContent className="p-12 text-center">
                                         <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                                         <h3 className="text-lg font-medium text-gray-900 mb-2">
-                                            No vacancies found
+                                            Вакансии не найдены
                                         </h3>
                                         <p className="text-gray-600">
                                             {searchTerm
-                                                ? "Try adjusting your search criteria"
-                                                : "Check back later for new opportunities"}
+                                                ? "Попробуйте изменить параметры поиска"
+                                                : "Загляните позже, чтобы увидеть новые предложения"}
                                         </p>
                                     </CardContent>
                                 </Card>
                             )}
                         </div>
 
-                        {/* Pagination */}
                         {totalPages > 1 && (
                             <motion.div
                                 initial={{ opacity: 0 }}
@@ -168,13 +163,13 @@ export default function JobSeekerVacanciesPage() {
                                     onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
                                     disabled={currentPage === 0}
                                 >
-                                    Previous
+                                    Назад
                                 </Button>
 
                                 <div className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg">
-                  <span className="text-sm text-gray-700">
-                    Page {currentPage + 1} of {totalPages}
-                  </span>
+                                    <span className="text-sm text-gray-700">
+                                        Страница {currentPage + 1} из {totalPages}
+                                    </span>
                                 </div>
 
                                 <Button
@@ -182,7 +177,7 @@ export default function JobSeekerVacanciesPage() {
                                     onClick={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))}
                                     disabled={currentPage >= totalPages - 1}
                                 >
-                                    Next
+                                    Вперед
                                 </Button>
                             </motion.div>
                         )}

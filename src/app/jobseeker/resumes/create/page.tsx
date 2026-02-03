@@ -54,13 +54,12 @@ export default function CreateResumePage() {
 
     const onSubmit = async (data: FormData) => {
         if (!userId) {
-            toast.error("User not authenticated");
+            toast.error("Пользователь не авторизован");
             return;
         }
 
         setIsLoading(true);
         try {
-            // 1. Создаем резюме
             const resumePayload: Omit<ResumeDto, "id"> = {
                 userId,
                 title: data.title,
@@ -72,7 +71,6 @@ export default function CreateResumePage() {
 
             const createdResume = await resumeService.create(resumePayload);
 
-            // 2. Добавляем образование
             for (const edu of data.education) {
                 if (edu.institution && edu.degree && edu.fieldOfStudy) {
                     await educationService.create({
@@ -82,7 +80,6 @@ export default function CreateResumePage() {
                 }
             }
 
-            // 3. Добавляем навыки
             for (const skill of data.skills) {
                 if (skill.name.trim()) {
                     await skillService.create({
@@ -92,7 +89,7 @@ export default function CreateResumePage() {
                 }
             }
 
-            toast.success("Resume created successfully!");
+            toast.success("Резюме успешно создано!");
             router.push("/jobseeker/resumes");
         } catch (error) {
             toast.error(handleApiError(error));
@@ -102,7 +99,7 @@ export default function CreateResumePage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -110,9 +107,9 @@ export default function CreateResumePage() {
                     className="mb-6"
                 >
                     <Link href="/jobseeker/resumes">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="hover:bg-white">
                             <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Resumes
+                            Назад к резюме
                         </Button>
                     </Link>
                 </motion.div>
@@ -122,49 +119,49 @@ export default function CreateResumePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                 >
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Create Your Resume</CardTitle>
+                    <Card className="shadow-xl bg-white">
+                        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
+                            <CardTitle>Создайте свое резюме</CardTitle>
                             <CardDescription>
-                                Build a comprehensive resume to apply for jobs
+                                Создайте полное резюме для подачи заявок на вакансии
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                                 {/* Basic Information */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900">Основная информация</h3>
 
                                     <Input
-                                        label="Resume Title"
-                                        placeholder="e.g. Senior Software Developer"
+                                        label="Название резюме"
+                                        placeholder="например, Старший разработчик ПО"
                                         required
                                         error={errors.title?.message}
                                         {...register("title", {
-                                            required: "Title is required",
+                                            required: "Название обязательно",
                                             minLength: {
                                                 value: 3,
-                                                message: "Title must be at least 3 characters",
+                                                message: "Название должно содержать минимум 3 символа",
                                             },
                                             maxLength: {
                                                 value: 255,
-                                                message: "Title must be at most 255 characters",
+                                                message: "Название должно содержать максимум 255 символов",
                                             },
                                         })}
                                     />
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Professional Summary
+                                            Профессиональное резюме
                                         </label>
                                         <textarea
                                             rows={5}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                            placeholder="Brief overview of your experience and skills..."
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                            placeholder="Краткий обзор вашего опыта и навыков..."
                                             {...register("summary", {
                                                 maxLength: {
                                                     value: 5000,
-                                                    message: "Summary must be at most 5000 characters",
+                                                    message: "Резюме должно содержать максимум 5000 символов",
                                                 },
                                             })}
                                         />
@@ -174,41 +171,41 @@ export default function CreateResumePage() {
                                     </div>
 
                                     <Input
-                                        label="Years of Experience"
+                                        label="Лет опыта"
                                         type="number"
-                                        placeholder="e.g. 5"
+                                        placeholder="например, 5"
                                         error={errors.experienceYears?.message}
                                         {...register("experienceYears", {
                                             valueAsNumber: true,
                                             min: {
                                                 value: 0,
-                                                message: "Experience cannot be negative",
+                                                message: "Опыт не может быть отрицательным",
                                             },
                                         })}
                                     />
 
                                     <Input
-                                        label="Contact Email"
+                                        label="Контактный email"
                                         type="email"
-                                        placeholder="your.email@example.com"
+                                        placeholder="ivan@example.ru"
                                         error={errors.contactEmail?.message}
                                         {...register("contactEmail", {
                                             pattern: {
                                                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                message: "Invalid email address",
+                                                message: "Неверный формат email",
                                             },
                                         })}
                                     />
 
                                     <Input
-                                        label="Contact Phone"
+                                        label="Контактный телефон"
                                         type="tel"
-                                        placeholder="+1234567890"
+                                        placeholder="+79001234567"
                                         error={errors.contactPhone?.message}
                                         {...register("contactPhone", {
                                             pattern: {
                                                 value: /^[+]?[- 0-9()]{7,20}$/,
-                                                message: "Invalid phone number",
+                                                message: "Неверный формат телефона",
                                             },
                                         })}
                                     />
@@ -217,29 +214,31 @@ export default function CreateResumePage() {
                                 {/* Education */}
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900">Education</h3>
+                                        <h3 className="text-lg font-semibold text-gray-900">Образование</h3>
                                         <Button
                                             type="button"
                                             variant="outline"
                                             size="sm"
                                             onClick={() => appendEducation({ institution: "", degree: "", fieldOfStudy: "", startYear: 2020, endYear: 2024 })}
+                                            className="hover:bg-blue-50"
                                         >
                                             <Plus className="h-4 w-4 mr-2" />
-                                            Add Education
+                                            Добавить образование
                                         </Button>
                                     </div>
 
                                     {educationFields.map((field, index) => (
-                                        <Card key={field.id} className="border-2">
+                                        <Card key={field.id} className="border-2 shadow-md bg-white">
                                             <CardContent className="p-4 space-y-4">
                                                 <div className="flex justify-between items-center">
-                                                    <h4 className="font-medium text-gray-900">Education {index + 1}</h4>
+                                                    <h4 className="font-medium text-gray-900">Образование {index + 1}</h4>
                                                     {educationFields.length > 1 && (
                                                         <Button
                                                             type="button"
                                                             variant="ghost"
                                                             size="sm"
                                                             onClick={() => removeEducation(index)}
+                                                            className="hover:bg-red-50"
                                                         >
                                                             <Trash2 className="h-4 w-4 text-red-600" />
                                                         </Button>
@@ -247,26 +246,26 @@ export default function CreateResumePage() {
                                                 </div>
 
                                                 <Input
-                                                    label="Institution"
-                                                    placeholder="University of California"
+                                                    label="Учебное заведение"
+                                                    placeholder="МГУ им. Ломоносова"
                                                     {...register(`education.${index}.institution`)}
                                                 />
 
                                                 <Input
-                                                    label="Degree"
-                                                    placeholder="Bachelor of Science"
+                                                    label="Степень"
+                                                    placeholder="Бакалавр наук"
                                                     {...register(`education.${index}.degree`)}
                                                 />
 
                                                 <Input
-                                                    label="Field of Study"
-                                                    placeholder="Computer Science"
+                                                    label="Специальность"
+                                                    placeholder="Информатика"
                                                     {...register(`education.${index}.fieldOfStudy`)}
                                                 />
 
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <Input
-                                                        label="Start Year"
+                                                        label="Год начала"
                                                         type="number"
                                                         placeholder="2020"
                                                         {...register(`education.${index}.startYear`, {
@@ -275,7 +274,7 @@ export default function CreateResumePage() {
                                                     />
 
                                                     <Input
-                                                        label="End Year (Optional)"
+                                                        label="Год окончания (необязательно)"
                                                         type="number"
                                                         placeholder="2024"
                                                         {...register(`education.${index}.endYear`, {
@@ -291,15 +290,16 @@ export default function CreateResumePage() {
                                 {/* Skills */}
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900">Skills</h3>
+                                        <h3 className="text-lg font-semibold text-gray-900">Навыки</h3>
                                         <Button
                                             type="button"
                                             variant="outline"
                                             size="sm"
                                             onClick={() => appendSkill({ name: "" })}
+                                            className="hover:bg-green-50"
                                         >
                                             <Plus className="h-4 w-4 mr-2" />
-                                            Add Skill
+                                            Добавить навык
                                         </Button>
                                     </div>
 
@@ -307,7 +307,7 @@ export default function CreateResumePage() {
                                         {skillFields.map((field, index) => (
                                             <div key={field.id} className="flex gap-2">
                                                 <Input
-                                                    placeholder="e.g. JavaScript, Python, etc."
+                                                    placeholder="например, JavaScript, Python и т.д."
                                                     {...register(`skills.${index}.name`)}
                                                 />
                                                 {skillFields.length > 1 && (
@@ -316,6 +316,7 @@ export default function CreateResumePage() {
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => removeSkill(index)}
+                                                        className="hover:bg-red-50"
                                                     >
                                                         <Trash2 className="h-4 w-4 text-red-600" />
                                                     </Button>
@@ -329,15 +330,15 @@ export default function CreateResumePage() {
                                 <div className="flex gap-4 pt-6 border-t">
                                     <Button
                                         type="submit"
-                                        className="flex-1"
+                                        className="flex-1 shadow-md hover:shadow-lg transition-shadow"
                                         isLoading={isLoading}
                                     >
                                         <Save className="h-4 w-4 mr-2" />
-                                        Create Resume
+                                        Создать резюме
                                     </Button>
                                     <Link href="/jobseeker/resumes" className="flex-1">
                                         <Button type="button" variant="outline" className="w-full">
-                                            Cancel
+                                            Отмена
                                         </Button>
                                     </Link>
                                 </div>

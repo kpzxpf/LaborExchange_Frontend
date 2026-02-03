@@ -37,21 +37,21 @@ export default function ResumesListPage() {
             const data = await resumeService.getByUser(userId);
             setResumes(data);
         } catch (error) {
-            toast.error("Failed to load resumes");
+            toast.error("Не удалось загрузить резюме");
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this resume?")) return;
+        if (!confirm("Вы уверены, что хотите удалить это резюме?")) return;
 
         try {
             await resumeService.delete(id);
-            toast.success("Resume deleted successfully");
+            toast.success("Резюме успешно удалено");
             fetchResumes();
         } catch (error) {
-            toast.error("Failed to delete resume");
+            toast.error("Не удалось удалить резюме");
         }
     };
 
@@ -66,7 +66,6 @@ export default function ResumesListPage() {
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -74,21 +73,20 @@ export default function ResumesListPage() {
                 >
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                            My Resumes
+                            Мои резюме
                         </h1>
                         <p className="text-gray-600">
-                            Manage your resumes and apply to jobs
+                            Управляйте вашими резюме и откликайтесь на вакансии
                         </p>
                     </div>
                     <Link href="/jobseeker/resumes/create">
                         <Button>
                             <Plus className="h-4 w-4 mr-2" />
-                            Create Resume
+                            Создать резюме
                         </Button>
                     </Link>
                 </motion.div>
 
-                {/* Resumes Grid */}
                 {resumes.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {resumes.map((resume, index) => (
@@ -106,7 +104,7 @@ export default function ResumesListPage() {
                                         <div className="space-y-3">
                                             {resume.experienceYears !== undefined && (
                                                 <p className="text-sm text-gray-600">
-                                                    <span className="font-medium">Experience:</span> {resume.experienceYears} years
+                                                    <span className="font-medium">Опыт:</span> {resume.experienceYears} лет
                                                 </p>
                                             )}
 
@@ -126,13 +124,13 @@ export default function ResumesListPage() {
                                                 <Link href={`/jobseeker/resumes/${resume.id}`} className="flex-1">
                                                     <Button variant="outline" size="sm" className="w-full">
                                                         <Eye className="h-4 w-4 mr-2" />
-                                                        View
+                                                        Открыть
                                                     </Button>
                                                 </Link>
                                                 <Link href={`/jobseeker/resumes/${resume.id}/edit`} className="flex-1">
                                                     <Button variant="outline" size="sm" className="w-full">
                                                         <Edit className="h-4 w-4 mr-2" />
-                                                        Edit
+                                                        Правка
                                                     </Button>
                                                 </Link>
                                                 <Button
@@ -158,15 +156,15 @@ export default function ResumesListPage() {
                             <CardContent className="p-12 text-center">
                                 <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                    No resumes yet
+                                    Резюме пока нет
                                 </h3>
                                 <p className="text-gray-600 mb-6">
-                                    Create your first resume to start applying for jobs
+                                    Создайте свое первое резюме, чтобы начать поиск работы
                                 </p>
                                 <Link href="/jobseeker/resumes/create">
                                     <Button>
                                         <Plus className="h-4 w-4 mr-2" />
-                                        Create Your First Resume
+                                        Создать первое резюме
                                     </Button>
                                 </Link>
                             </CardContent>

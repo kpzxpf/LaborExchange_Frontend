@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, ReactNode } from "react"; // Импортируем ReactNode
+import { forwardRef, ReactNode } from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -8,7 +8,7 @@ interface ButtonProps extends HTMLMotionProps<"button"> {
     variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
     size?: "sm" | "md" | "lg";
     isLoading?: boolean;
-    children?: ReactNode; // Явно переопределяем тип детей
+    children?: ReactNode;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -36,7 +36,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 whileTap={{ scale: disabled || isLoading ? 1 : 0.98 }}
                 className={cn(baseStyles, variants[variant], sizes[size], className)}
                 disabled={disabled || isLoading}
-                // Теперь props содержат правильные типы для motion.button
                 {...props}
             >
                 {isLoading && (
