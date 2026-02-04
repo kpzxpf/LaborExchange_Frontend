@@ -19,12 +19,14 @@ export default function ResumesListPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!loading && (!isAuthenticated || userRole !== "JOB_SEEKER")) {
+        if (loading) return;
+
+        if (!isAuthenticated || userRole !== "JOB_SEEKER") {
             router.push("/auth/login");
             return;
         }
 
-        if (isAuthenticated && userRole === "JOB_SEEKER" && userId) {
+        if (userId) {
             fetchResumes();
         }
     }, [isAuthenticated, userRole, userId, loading, router]);
@@ -35,9 +37,11 @@ export default function ResumesListPage() {
         setIsLoading(true);
         try {
             const data = await resumeService.getByUser(userId);
-            setResumes(data);
+            setResumes(data || []);
         } catch (error) {
+            console.error("Resumes error:", error);
             toast.error("Не удалось загрузить резюме");
+            setResumes([]);
         } finally {
             setIsLoading(false);
         }
@@ -57,15 +61,23 @@ export default function ResumesListPage() {
 
     if (loading || isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Загрузка...</p>
+                </div>
             </div>
         );
     }
 
+    if (!isAuthenticated || userRole !== "JOB_SEEKER") {
+        return null;
+    }
+
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -76,17 +88,18 @@ export default function ResumesListPage() {
                             Мои резюме
                         </h1>
                         <p className="text-gray-600">
-                            Управляйте вашими резюме и откликайтесь на вакансии
+                            Управляйте резюме и откликайтесь на вакансии
                         </p>
                     </div>
                     <Link href="/jobseeker/resumes/create">
-                        <Button>
+                        <Button className="shadow-md hover:shadow-lg transition-shadow">
                             <Plus className="h-4 w-4 mr-2" />
                             Создать резюме
                         </Button>
                     </Link>
                 </motion.div>
 
+                {/* Resumes Grid */}
                 {resumes.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {resumes.map((resume, index) => (
@@ -96,13 +109,13 @@ export default function ResumesListPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
                             >
-                                <Card hover>
-                                    <CardHeader>
+                                <Card hover className="shadow-md hover:shadow-xl transition-all bg-white h-full">
+                                    <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
                                         <CardTitle className="text-lg">{resume.title}</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="space-y-3">
-                                            {resume.experienceYears !== undefined && (
+                                            {resume.experienceYears !== undefined && resume.experienceYears !== null && (
                                                 <p className="text-sm text-gray-600">
                                                     <span className="font-medium">Опыт:</span> {resume.experienceYears} лет
                                                 </p>
@@ -122,21 +135,22 @@ export default function ResumesListPage() {
 
                                             <div className="flex gap-2 pt-4 border-t">
                                                 <Link href={`/jobseeker/resumes/${resume.id}`} className="flex-1">
-                                                    <Button variant="outline" size="sm" className="w-full">
+                                                    <Button variant="outline" size="sm" className="w-full hover:bg-blue-50">
                                                         <Eye className="h-4 w-4 mr-2" />
-                                                        Открыть
+                                                        Просмотр
                                                     </Button>
                                                 </Link>
                                                 <Link href={`/jobseeker/resumes/${resume.id}/edit`} className="flex-1">
-                                                    <Button variant="outline" size="sm" className="w-full">
+                                                    <Button variant="outline" size="sm" className="w-full hover:bg-green-50">
                                                         <Edit className="h-4 w-4 mr-2" />
-                                                        Правка
+                                                        Редактировать
                                                     </Button>
                                                 </Link>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => handleDelete(resume.id)}
+                                                    className="hover:bg-red-50"
                                                 >
                                                     <Trash2 className="h-4 w-4 text-red-600" />
                                                 </Button>
@@ -152,17 +166,17 @@ export default function ResumesListPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                     >
-                        <Card>
+                        <Card className="shadow-xl bg-white">
                             <CardContent className="p-12 text-center">
                                 <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                    Резюме пока нет
+                                    Пока нет резюме
                                 </h3>
                                 <p className="text-gray-600 mb-6">
-                                    Создайте свое первое резюме, чтобы начать поиск работы
+                                    Создайте свое первое резюме, чтобы начать откликаться на вакансии
                                 </p>
                                 <Link href="/jobseeker/resumes/create">
-                                    <Button>
+                                    <Button className="shadow-md hover:shadow-lg transition-shadow">
                                         <Plus className="h-4 w-4 mr-2" />
                                         Создать первое резюме
                                     </Button>
