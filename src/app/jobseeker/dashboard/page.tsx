@@ -30,42 +30,66 @@ export default function JobSeekerDashboard() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!loading && (!isAuthenticated || userRole !== "JOB_SEEKER")) {
+        // Ждем завершения проверки авторизации
+        if (loading) {
+            return;
+        }
+
+        // Проверяем авторизацию
+        if (!isAuthenticated) {
             router.push("/auth/login");
             return;
         }
 
-        const fetchData = async () => {
-            if (!userId) return;
+        // Проверяем роль
+        if (userRole !== "JOB_SEEKER") {
+            router.push("/auth/login");
+            return;
+        }
 
-            try {
-                const [vacanciesRes, resumesRes, applicationsRes] = await Promise.all([
-                    vacancyService.getAll(0, 5),
-                    resumeService.getByUser(userId),
-                    applicationService.getByCandidate(userId),
-                ]);
-
-                setVacancies(vacanciesRes.content);
-                setResumes(resumesRes);
-                setApplications(applicationsRes);
-            } catch (error) {
-                toast.error("Не удалось загрузить данные панели управления");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        if (isAuthenticated && userRole === "JOB_SEEKER" && userId) {
+        // Загружаем данные только если есть userId
+        if (userId) {
             fetchData();
         }
     }, [isAuthenticated, userRole, userId, loading, router]);
 
-    if (loading || isLoading) {
+    const fetchData = async () => {
+        if (!userId) return;
+
+        setIsLoading(true);
+        try {
+            const [vacanciesRes, resumesRes, applicationsRes] = await Promise.all([
+                vacancyService.getAll(0, 5),
+                resumeService.getByUser(userId),
+                applicationService.getByCandidate(userId),
+            ]);
+
+            setVacancies(vacanciesRes.content || []);
+            setResumes(resumesRes || []);
+            setApplications(applicationsRes || []);
+        } catch (error) {
+            console.error("Dashboard error:", error);
+            toast.error("Не удалось загрузить данные панели управления");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Показываем загрузку только пока проверяется auth или загружаются данные
+    if (loading || (isAuthenticated && userRole === "JOB_SEEKER" && isLoading)) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Загрузка...</p>
+                </div>
             </div>
         );
+    }
+
+    // Если не авторизован или неправильная роль - ничего не показываем (идет редирект)
+    if (!isAuthenticated || userRole !== "JOB_SEEKER") {
+        return null;
     }
 
     const stats = [
@@ -221,7 +245,7 @@ export default function JobSeekerDashboard() {
                                                 <p className="text-sm text-gray-600">
                                                     {vacancy.companyName}
                                                 </p>
-                                                {vacancy.salary && (
+                                                {vacancy.salary && vacancy.salary > 0 && (
                                                     <p className="text-sm text-green-600 font-medium mt-1 flex items-center">
                                                         <TrendingUp className="h-4 w-4 mr-1" />
                                                         {vacancy.salary.toLocaleString()} ₽

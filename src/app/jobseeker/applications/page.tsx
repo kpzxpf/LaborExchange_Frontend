@@ -13,16 +13,9 @@ import type { ApplicationResponseDto, VacancyDto } from "@/types";
 import { handleApiError } from "@/lib/apiClient";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
 
 type ApplicationWithVacancy = ApplicationResponseDto & {
     vacancy?: VacancyDto;
-};
-
-const STATUS_LABELS: Record<string, string> = {
-    NEW: "Новый",
-    REJECTED: "Отклонен",
-    WITHDRAWN: "Отозван",
 };
 
 export default function JobSeekerApplicationsPage() {
@@ -32,12 +25,14 @@ export default function JobSeekerApplicationsPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!loading && (!isAuthenticated || userRole !== "JOB_SEEKER")) {
+        if (loading) return;
+
+        if (!isAuthenticated || userRole !== "JOB_SEEKER") {
             router.push("/auth/login");
             return;
         }
 
-        if (isAuthenticated && userRole === "JOB_SEEKER" && userId) {
+        if (userId) {
             fetchApplications();
         }
     }, [isAuthenticated, userRole, userId, loading, router]);
@@ -49,8 +44,9 @@ export default function JobSeekerApplicationsPage() {
         try {
             const applicationsData = await applicationService.getByCandidate(userId);
 
+            // Загружаем информацию о вакансиях
             const applicationsWithVacancies = await Promise.all(
-                applicationsData.map(async (app) => {
+                (applicationsData || []).map(async (app) => {
                     try {
                         const vacancy = await vacancyService.getById(app.vacancyId);
                         return { ...app, vacancy };
@@ -62,14 +58,16 @@ export default function JobSeekerApplicationsPage() {
 
             setApplications(applicationsWithVacancies);
         } catch (error) {
+            console.error("Applications error:", error);
             toast.error("Не удалось загрузить отклики");
+            setApplications([]);
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleWithdraw = async (application: ApplicationResponseDto) => {
-        if (!confirm("Вы уверены, что хотите отозвать свой отклик?")) return;
+        if (!confirm("Вы уверены, что хотите отозвать этот отклик?")) return;
 
         try {
             await applicationService.withdraw({
@@ -101,15 +99,23 @@ export default function JobSeekerApplicationsPage() {
 
     if (loading || isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Загрузка...</p>
+                </div>
             </div>
         );
     }
 
+    if (!isAuthenticated || userRole !== "JOB_SEEKER") {
+        return null;
+    }
+
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -119,10 +125,11 @@ export default function JobSeekerApplicationsPage() {
                         Мои отклики
                     </h1>
                     <p className="text-gray-600">
-                        Отслеживайте статус ваших заявок на работу
+                        Отслеживайте статус ваших откликов
                     </p>
                 </motion.div>
 
+                {/* Applications List */}
                 {applications.length > 0 ? (
                     <div className="space-y-4">
                         {applications.map((application, index) => (
@@ -132,7 +139,7 @@ export default function JobSeekerApplicationsPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
                             >
-                                <Card hover>
+                                <Card hover className="shadow-md hover:shadow-xl transition-all bg-white">
                                     <CardContent className="p-6">
                                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                             <div className="flex-1">
@@ -153,13 +160,13 @@ export default function JobSeekerApplicationsPage() {
                                                             application.statusName
                                                         )}`}
                                                     >
-                                                        {STATUS_LABELS[application.statusName] || application.statusName}
+                                                        {application.statusName}
                                                     </span>
                                                 </div>
 
                                                 <div className="flex items-center text-sm text-gray-500">
                                                     <Calendar className="h-4 w-4 mr-2" />
-                                                    Отправлено {format(new Date(application.createdAt), "dd MMM yyyy", { locale: ru })}
+                                                    Дата отклика: {format(new Date(application.createdAt), "dd.MM.yyyy")}
                                                 </div>
 
                                                 {application.vacancy?.description && (
@@ -171,16 +178,16 @@ export default function JobSeekerApplicationsPage() {
 
                                             <div className="flex flex-col gap-2 md:min-w-[200px]">
                                                 <Link href={`/jobseeker/vacancies/${application.vacancyId}`}>
-                                                    <Button variant="outline" size="sm" className="w-full">
+                                                    <Button variant="outline" size="sm" className="w-full hover:bg-blue-50">
                                                         <Eye className="h-4 w-4 mr-2" />
-                                                        Просмотреть вакансию
+                                                        Посмотреть вакансию
                                                     </Button>
                                                 </Link>
 
                                                 <Link href={`/jobseeker/resumes/${application.resumeId}`}>
-                                                    <Button variant="outline" size="sm" className="w-full">
+                                                    <Button variant="outline" size="sm" className="w-full hover:bg-green-50">
                                                         <FileText className="h-4 w-4 mr-2" />
-                                                        Просмотреть резюме
+                                                        Посмотреть резюме
                                                     </Button>
                                                 </Link>
 
@@ -207,18 +214,18 @@ export default function JobSeekerApplicationsPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                     >
-                        <Card>
+                        <Card className="shadow-xl bg-white">
                             <CardContent className="p-12 text-center">
                                 <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                    Откликов пока нет
+                                    Пока нет откликов
                                 </h3>
                                 <p className="text-gray-600 mb-6">
                                     Начните откликаться на вакансии, чтобы увидеть их здесь
                                 </p>
                                 <Link href="/jobseeker/vacancies">
-                                    <Button>
-                                        Поиск вакансий
+                                    <Button className="shadow-md hover:shadow-lg transition-shadow">
+                                        Просмотреть вакансии
                                     </Button>
                                 </Link>
                             </CardContent>
@@ -226,6 +233,7 @@ export default function JobSeekerApplicationsPage() {
                     </motion.div>
                 )}
 
+                {/* Statistics */}
                 {applications.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -233,7 +241,7 @@ export default function JobSeekerApplicationsPage() {
                         transition={{ delay: 0.3 }}
                         className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6"
                     >
-                        <Card>
+                        <Card className="shadow-md bg-white">
                             <CardContent className="p-6">
                                 <div className="text-center">
                                     <p className="text-sm font-medium text-gray-600 mb-1">Всего откликов</p>
@@ -242,7 +250,7 @@ export default function JobSeekerApplicationsPage() {
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="shadow-md bg-white">
                             <CardContent className="p-6">
                                 <div className="text-center">
                                     <p className="text-sm font-medium text-gray-600 mb-1">Активные</p>
@@ -253,7 +261,7 @@ export default function JobSeekerApplicationsPage() {
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="shadow-md bg-white">
                             <CardContent className="p-6">
                                 <div className="text-center">
                                     <p className="text-sm font-medium text-gray-600 mb-1">Отозванные</p>
