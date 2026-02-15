@@ -35,27 +35,31 @@ export default function EmployerDashboard() {
         }
 
         const fetchData = async () => {
+            if (!userId) return;
+
             try {
-                const [vacanciesRes, companiesRes, statsRes] = await Promise.all([
-                    vacancyService.getAll(0, 5),
-                    companyService.getAll(),
-                    applicationService.getStatistics(),
-                ]);
+                // ✅ ИСПРАВЛЕНО: Получаем только вакансии текущего работодателя
+                const vacanciesRes = await vacancyService.getByEmployer(userId, 0, 5);
+                const companiesRes = await companyService.getAll();
+
+                // ✅ ИСПРАВЛЕНО: Получаем статистику только для вакансий этого работодателя
+                const statsRes = await applicationService.getEmployerStatistics(userId);
 
                 setVacancies(vacanciesRes.content);
                 setCompanies(companiesRes);
                 setStatistics(statsRes);
             } catch (error) {
                 toast.error("Не удалось загрузить данные панели управления");
+                console.error("Dashboard fetch error:", error);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        if (isAuthenticated && userRole === "EMPLOYER") {
+        if (isAuthenticated && userRole === "EMPLOYER" && userId) {
             fetchData();
         }
-    }, [isAuthenticated, userRole, loading, router]);
+    }, [isAuthenticated, userRole, userId, loading, router]);
 
     if (loading || isLoading) {
         return (
@@ -64,6 +68,11 @@ export default function EmployerDashboard() {
             </div>
         );
     }
+
+    // ✅ ИСПРАВЛЕНО: Используем applicationsByStatus для подсчета
+    const pendingCount = statistics?.applicationsByStatus?.["PENDING"] || 0;
+    const acceptedCount = statistics?.applicationsByStatus?.["ACCEPTED"] || 0;
+    const rejectedCount = statistics?.applicationsByStatus?.["REJECTED"] || 0;
 
     const stats = [
         {
@@ -88,8 +97,8 @@ export default function EmployerDashboard() {
             bgColor: "bg-purple-100",
         },
         {
-            title: "Активных откликов",
-            value: statistics?.activeApplications || 0,
+            title: "Ожидают рассмотрения",
+            value: pendingCount,
             icon: TrendingUp,
             color: "text-orange-600",
             bgColor: "bg-orange-100",

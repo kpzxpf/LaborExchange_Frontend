@@ -76,7 +76,8 @@ const Header = () => {
                     <div className="hidden md:flex items-center space-x-4">
                         {isAuthenticated ? (
                             <>
-                                <Link href={`/${userRole?.toLowerCase()}/profile`}>
+                                {/* ✅ ИСПРАВЛЕНО: Правильный URL без подчеркивания */}
+                                <Link href={userRole === "EMPLOYER" ? "/employer/profile" : "/jobseeker/profile"}>
                                     <Button variant="ghost" size="sm" className="hover:bg-gray-100">
                                         <User className="h-4 w-4 mr-2" />
                                         Профиль
@@ -144,7 +145,8 @@ const Header = () => {
                                             </div>
                                         </Link>
                                     ))}
-                                    <Link href={`/${userRole?.toLowerCase()}/profile`}>
+                                    {/* ✅ ИСПРАВЛЕНО: Правильный URL для мобильного меню */}
+                                    <Link href={userRole === "EMPLOYER" ? "/employer/profile" : "/jobseeker/profile"}>
                                         <div
                                             className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all"
                                             onClick={() => setIsMenuOpen(false)}

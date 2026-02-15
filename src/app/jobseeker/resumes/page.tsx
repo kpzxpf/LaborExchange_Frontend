@@ -59,6 +59,21 @@ export default function ResumesListPage() {
         }
     };
 
+    const handleTogglePublish = async (resume: ResumeDto) => {
+        try {
+            if (resume.isPublished) {
+                await resumeService.unpublish(resume.id);
+                toast.success("Резюме снято с публикации");
+            } else {
+                await resumeService.publish(resume.id);
+                toast.success("Резюме опубликовано");
+            }
+            fetchResumes();
+        } catch (error) {
+            toast.error("Не удалось изменить статус публикации");
+        }
+    };
+
     if (loading || isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -77,7 +92,6 @@ export default function ResumesListPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -99,7 +113,6 @@ export default function ResumesListPage() {
                     </Link>
                 </motion.div>
 
-                {/* Resumes Grid */}
                 {resumes.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {resumes.map((resume, index) => (
@@ -115,6 +128,18 @@ export default function ResumesListPage() {
                                     </CardHeader>
                                     <CardContent>
                                         <div className="space-y-3">
+                                            {resume.isPublished !== undefined && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                                        resume.isPublished
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-gray-100 text-gray-800'
+                                                    }`}>
+                                                        {resume.isPublished ? '✓ Опубликовано' : 'Не опубликовано'}
+                                                    </span>
+                                                </div>
+                                            )}
+
                                             {resume.experienceYears !== undefined && resume.experienceYears !== null && (
                                                 <p className="text-sm text-gray-600">
                                                     <span className="font-medium">Опыт:</span> {resume.experienceYears} лет
@@ -133,27 +158,39 @@ export default function ResumesListPage() {
                                                 </p>
                                             )}
 
-                                            <div className="flex gap-2 pt-4 border-t">
-                                                <Link href={`/jobseeker/resumes/${resume.id}`} className="flex-1">
-                                                    <Button variant="outline" size="sm" className="w-full hover:bg-blue-50">
-                                                        <Eye className="h-4 w-4 mr-2" />
-                                                        Просмотр
+                                            <div className="flex flex-col gap-2 pt-4 border-t">
+                                                <div className="flex gap-2">
+                                                    <Link href={`/jobseeker/resumes/${resume.id}`} className="flex-1">
+                                                        <Button variant="outline" size="sm" className="w-full hover:bg-blue-50">
+                                                            <Eye className="h-4 w-4 mr-2" />
+                                                            Просмотр
+                                                        </Button>
+                                                    </Link>
+                                                    <Link href={`/jobseeker/resumes/${resume.id}/edit`} className="flex-1">
+                                                        <Button variant="outline" size="sm" className="w-full hover:bg-green-50">
+                                                            <Edit className="h-4 w-4 mr-2" />
+                                                            Редактировать
+                                                        </Button>
+                                                    </Link>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleTogglePublish(resume)}
+                                                        className="flex-1 hover:bg-blue-50"
+                                                    >
+                                                        {resume.isPublished ? 'Снять с публикации' : 'Опубликовать'}
                                                     </Button>
-                                                </Link>
-                                                <Link href={`/jobseeker/resumes/${resume.id}/edit`} className="flex-1">
-                                                    <Button variant="outline" size="sm" className="w-full hover:bg-green-50">
-                                                        <Edit className="h-4 w-4 mr-2" />
-                                                        Редактировать
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleDelete(resume.id)}
+                                                        className="hover:bg-red-50"
+                                                    >
+                                                        <Trash2 className="h-4 w-4 text-red-600" />
                                                     </Button>
-                                                </Link>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleDelete(resume.id)}
-                                                    className="hover:bg-red-50"
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-red-600" />
-                                                </Button>
+                                                </div>
                                             </div>
                                         </div>
                                     </CardContent>

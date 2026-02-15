@@ -11,6 +11,7 @@ import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { resumeService, educationService, skillService } from "@/services/api";
 import type { ResumeDto, EducationDto, SkillDto } from "@/types";
 import toast from "react-hot-toast";
+import { span } from "framer-motion/client";
 
 export default function ViewResumePage() {
     const params = useParams();

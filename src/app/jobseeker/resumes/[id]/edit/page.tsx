@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,21 +26,24 @@ type FormData = {
     skills: Array<{ name: string }>;
 };
 
-export default function CreateResumePage() {
-    const { userId } = useAuth();
+export default function EditResumePage() {
+    const params = useParams();
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
+    const { userId, isAuthenticated, userRole, loading } = useAuth();
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
 
     const {
         register,
         handleSubmit,
         control,
+        setValue,
         formState: { errors },
     } = useForm<FormData>({
         defaultValues: {
             isPublished: false,
-            education: [{ institution: "", degree: "", fieldOfStudy: "", startYear: 2020, endYear: 2024 }],
-            skills: [{ name: "" }],
+            education: [],
+            skills: [],
         },
     });
 
@@ -54,15 +57,62 @@ export default function CreateResumePage() {
         name: "skills",
     });
 
-    const onSubmit = async (data: FormData) => {
-        if (!userId) {
-            toast.error("Пользователь не авторизован");
+    useEffect(() => {
+        if (!loading && (!isAuthenticated || userRole !== "JOB_SEEKER")) {
+            router.push("/auth/login");
             return;
         }
 
+        if (params.id && userId) {
+            loadResumeData();
+        }
+    }, [params.id, isAuthenticated, userRole, userId, loading, router]);
+
+    const loadResumeData = async () => {
         setIsLoading(true);
         try {
-            const resumePayload: Omit<ResumeDto, "id"> = {
+            const resumeId = Number(params.id);
+            const [resumeData, educationData, skillsData] = await Promise.all([
+                resumeService.getById(resumeId),
+                educationService.getByResume(resumeId),
+                skillService.getByResume(resumeId),
+            ]);
+
+            setValue("title", resumeData.title);
+            setValue("summary", resumeData.summary || "");
+            setValue("experienceYears", resumeData.experienceYears || 0);
+            setValue("contactEmail", resumeData.contactEmail || "");
+            setValue("contactPhone", resumeData.contactPhone || "");
+            setValue("isPublished", resumeData.isPublished || false);
+
+            if (educationData.length > 0) {
+                setValue("education", educationData.map(edu => ({
+                    institution: edu.institution,
+                    degree: edu.degree,
+                    fieldOfStudy: edu.fieldOfStudy,
+                    startYear: edu.startYear,
+                    endYear: edu.endYear,
+                })));
+            }
+
+            if (skillsData.length > 0) {
+                setValue("skills", skillsData.map(skill => ({ name: skill.name })));
+            }
+        } catch (error) {
+            toast.error("Не удалось загрузить резюме");
+            router.push("/jobseeker/resumes");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const onSubmit = async (data: FormData) => {
+        if (!userId || !params.id) return;
+
+        setIsSaving(true);
+        try {
+            const resumePayload: ResumeDto = {
+                id: Number(params.id),
                 userId,
                 title: data.title,
                 summary: data.summary,
@@ -72,47 +122,24 @@ export default function CreateResumePage() {
                 isPublished: data.isPublished,
             };
 
-            const createdResume = await resumeService.create(resumePayload);
+            await resumeService.update(resumePayload);
 
-            if (!createdResume?.id) {
-                throw new Error("Resume creation failed - no ID returned");
-            }
-
-            for (const edu of data.education) {
-                if (edu.institution && edu.degree && edu.fieldOfStudy) {
-                    try {
-                        await educationService.create({
-                            ...edu,
-                            resumeId: createdResume.id,
-                        });
-                    } catch (error) {
-                        console.error("Failed to create education:", error);
-                    }
-                }
-            }
-
-            for (const skill of data.skills) {
-                if (skill.name.trim()) {
-                    try {
-                        await skillService.create({
-                            name: skill.name,
-                            resumeId: createdResume.id,
-                        });
-                    } catch (error) {
-                        console.error("Failed to create skill:", error);
-                    }
-                }
-            }
-
-            toast.success("Резюме успешно создано!");
+            toast.success("Резюме успешно обновлено!");
             router.push("/jobseeker/resumes");
         } catch (error) {
-            console.error("Resume creation error:", error);
             toast.error(handleApiError(error));
         } finally {
-            setIsLoading(false);
+            setIsSaving(false);
         }
     };
+
+    if (loading || isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
@@ -137,10 +164,8 @@ export default function CreateResumePage() {
                 >
                     <Card className="shadow-xl bg-white">
                         <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
-                            <CardTitle>Создайте свое резюме</CardTitle>
-                            <CardDescription>
-                                Создайте полное резюме для подачи заявок на вакансии
-                            </CardDescription>
+                            <CardTitle>Редактировать резюме</CardTitle>
+                            <CardDescription>Обновите информацию в вашем резюме</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -154,14 +179,7 @@ export default function CreateResumePage() {
                                         error={errors.title?.message}
                                         {...register("title", {
                                             required: "Название обязательно",
-                                            minLength: {
-                                                value: 3,
-                                                message: "Название должно содержать минимум 3 символа",
-                                            },
-                                            maxLength: {
-                                                value: 255,
-                                                message: "Название должно содержать максимум 255 символов",
-                                            },
+                                            minLength: { value: 3, message: "Минимум 3 символа" },
                                         })}
                                     />
 
@@ -171,58 +189,28 @@ export default function CreateResumePage() {
                                         </label>
                                         <textarea
                                             rows={5}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                            placeholder="Краткий обзор вашего опыта и навыков..."
-                                            {...register("summary", {
-                                                maxLength: {
-                                                    value: 5000,
-                                                    message: "Резюме должно содержать максимум 5000 символов",
-                                                },
-                                            })}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            placeholder="Краткий обзор вашего опыта..."
+                                            {...register("summary")}
                                         />
-                                        {errors.summary && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.summary.message}</p>
-                                        )}
                                     </div>
 
                                     <Input
                                         label="Лет опыта"
                                         type="number"
-                                        placeholder="например, 5"
-                                        error={errors.experienceYears?.message}
-                                        {...register("experienceYears", {
-                                            valueAsNumber: true,
-                                            min: {
-                                                value: 0,
-                                                message: "Опыт не может быть отрицательным",
-                                            },
-                                        })}
+                                        {...register("experienceYears", { valueAsNumber: true })}
                                     />
 
                                     <Input
                                         label="Контактный email"
                                         type="email"
-                                        placeholder="ivan@example.ru"
-                                        error={errors.contactEmail?.message}
-                                        {...register("contactEmail", {
-                                            pattern: {
-                                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                message: "Неверный формат email",
-                                            },
-                                        })}
+                                        {...register("contactEmail")}
                                     />
 
                                     <Input
                                         label="Контактный телефон"
                                         type="tel"
-                                        placeholder="+79001234567"
-                                        error={errors.contactPhone?.message}
-                                        {...register("contactPhone", {
-                                            pattern: {
-                                                value: /^[+]?[- 0-9()]{7,20}$/,
-                                                message: "Неверный формат телефона",
-                                            },
-                                        })}
+                                        {...register("contactPhone")}
                                     />
 
                                     <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
@@ -245,16 +233,21 @@ export default function CreateResumePage() {
                                             type="button"
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => appendEducation({ institution: "", degree: "", fieldOfStudy: "", startYear: 2020, endYear: 2024 })}
-                                            className="hover:bg-blue-50"
+                                            onClick={() => appendEducation({
+                                                institution: "",
+                                                degree: "",
+                                                fieldOfStudy: "",
+                                                startYear: 2020,
+                                                endYear: 2024
+                                            })}
                                         >
                                             <Plus className="h-4 w-4 mr-2" />
-                                            Добавить образование
+                                            Добавить
                                         </Button>
                                     </div>
 
                                     {educationFields.map((field, index) => (
-                                        <Card key={field.id} className="border-2 shadow-md bg-white">
+                                        <Card key={field.id} className="border-2">
                                             <CardContent className="p-4 space-y-4">
                                                 <div className="flex justify-between items-center">
                                                     <h4 className="font-medium text-gray-900">Образование {index + 1}</h4>
@@ -264,7 +257,6 @@ export default function CreateResumePage() {
                                                             variant="ghost"
                                                             size="sm"
                                                             onClick={() => removeEducation(index)}
-                                                            className="hover:bg-red-50"
                                                         >
                                                             <Trash2 className="h-4 w-4 text-red-600" />
                                                         </Button>
@@ -273,39 +265,26 @@ export default function CreateResumePage() {
 
                                                 <Input
                                                     label="Учебное заведение"
-                                                    placeholder="МГУ им. Ломоносова"
                                                     {...register(`education.${index}.institution`)}
                                                 />
-
                                                 <Input
                                                     label="Степень"
-                                                    placeholder="Бакалавр наук"
                                                     {...register(`education.${index}.degree`)}
                                                 />
-
                                                 <Input
                                                     label="Специальность"
-                                                    placeholder="Информатика"
                                                     {...register(`education.${index}.fieldOfStudy`)}
                                                 />
-
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <Input
                                                         label="Год начала"
                                                         type="number"
-                                                        placeholder="2020"
-                                                        {...register(`education.${index}.startYear`, {
-                                                            valueAsNumber: true,
-                                                        })}
+                                                        {...register(`education.${index}.startYear`, { valueAsNumber: true })}
                                                     />
-
                                                     <Input
-                                                        label="Год окончания (необязательно)"
+                                                        label="Год окончания"
                                                         type="number"
-                                                        placeholder="2024"
-                                                        {...register(`education.${index}.endYear`, {
-                                                            valueAsNumber: true,
-                                                        })}
+                                                        {...register(`education.${index}.endYear`, { valueAsNumber: true })}
                                                     />
                                                 </div>
                                             </CardContent>
@@ -321,10 +300,9 @@ export default function CreateResumePage() {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => appendSkill({ name: "" })}
-                                            className="hover:bg-green-50"
                                         >
                                             <Plus className="h-4 w-4 mr-2" />
-                                            Добавить навык
+                                            Добавить
                                         </Button>
                                     </div>
 
@@ -332,7 +310,7 @@ export default function CreateResumePage() {
                                         {skillFields.map((field, index) => (
                                             <div key={field.id} className="flex gap-2">
                                                 <Input
-                                                    placeholder="например, JavaScript, Python и т.д."
+                                                    placeholder="например, JavaScript"
                                                     {...register(`skills.${index}.name`)}
                                                 />
                                                 {skillFields.length > 1 && (
@@ -341,7 +319,6 @@ export default function CreateResumePage() {
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => removeSkill(index)}
-                                                        className="hover:bg-red-50"
                                                     >
                                                         <Trash2 className="h-4 w-4 text-red-600" />
                                                     </Button>
@@ -354,11 +331,11 @@ export default function CreateResumePage() {
                                 <div className="flex gap-4 pt-6 border-t">
                                     <Button
                                         type="submit"
-                                        className="flex-1 shadow-md hover:shadow-lg transition-shadow"
-                                        isLoading={isLoading}
+                                        className="flex-1"
+                                        isLoading={isSaving}
                                     >
                                         <Save className="h-4 w-4 mr-2" />
-                                        Создать резюме
+                                        Сохранить изменения
                                     </Button>
                                     <Link href="/jobseeker/resumes" className="flex-1">
                                         <Button type="button" variant="outline" className="w-full">

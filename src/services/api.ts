@@ -48,6 +48,14 @@ export const vacancyService = {
         return response.data;
     },
 
+    getByEmployer: async (employerId: number, page = 0, size = 10): Promise<PageResponse<VacancyDto>> => {
+        const response = await apiClient.get<PageResponse<VacancyDto>>(
+            `/api/vacancies/employer/${employerId}`,
+            { params: { page, size } }
+        );
+        return response.data;
+    },
+
     create: async (data: Omit<VacancyDto, "id">): Promise<VacancyDto> => {
         const response = await apiClient.post<VacancyDto>("/api/vacancies", data);
         return response.data;
@@ -201,13 +209,17 @@ export const applicationService = {
         return response.data;
     },
 
-    reject: async (data: ApplicationRequestDto): Promise<ApplicationResponseDto> => {
-        const response = await apiClient.post<ApplicationResponseDto>("/api/applications/reject", data);
+    reject: async (applicationId: number): Promise<ApplicationResponseDto> => {
+        const response = await apiClient.post<ApplicationResponseDto>(
+            `/api/applications/${applicationId}/reject`
+        );
         return response.data;
     },
 
-    withdraw: async (data: ApplicationRequestDto): Promise<ApplicationResponseDto> => {
-        const response = await apiClient.post<ApplicationResponseDto>("/api/applications/withdrawn", data);
+    withdraw: async (applicationId: number): Promise<ApplicationResponseDto> => {
+        const response = await apiClient.post<ApplicationResponseDto>(
+            `/api/applications/${applicationId}/withdraw`
+        );
         return response.data;
     },
 
@@ -220,6 +232,20 @@ export const applicationService = {
 
     getStatistics: async (): Promise<ApplicationStatisticsDto> => {
         const response = await apiClient.get<ApplicationStatisticsDto>("/api/applications/statistics");
+        return response.data;
+    },
+
+    getByEmployer: async (employerId: number): Promise<ApplicationResponseDto[]> => {
+        const response = await apiClient.get<ApplicationResponseDto[]>(
+            `/api/applications/employer/${employerId}`
+        );
+        return response.data;
+    },
+
+    getEmployerStatistics: async (employerId: number): Promise<ApplicationStatisticsDto> => {
+        const response = await apiClient.get<ApplicationStatisticsDto>(
+            `/api/applications/employer/${employerId}/statistics`
+        );
         return response.data;
     },
 };
