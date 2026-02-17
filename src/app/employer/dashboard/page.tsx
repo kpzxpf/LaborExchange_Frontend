@@ -38,11 +38,9 @@ export default function EmployerDashboard() {
             if (!userId) return;
 
             try {
-                // ✅ ИСПРАВЛЕНО: Получаем только вакансии текущего работодателя
                 const vacanciesRes = await vacancyService.getByEmployer(userId, 0, 5);
                 const companiesRes = await companyService.getAll();
 
-                // ✅ ИСПРАВЛЕНО: Получаем статистику только для вакансий этого работодателя
                 const statsRes = await applicationService.getEmployerStatistics(userId);
 
                 setVacancies(vacanciesRes.content);
@@ -61,15 +59,6 @@ export default function EmployerDashboard() {
         }
     }, [isAuthenticated, userRole, userId, loading, router]);
 
-    if (loading || isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-            </div>
-        );
-    }
-
-    // ✅ ИСПРАВЛЕНО: Используем applicationsByStatus для подсчета
     const pendingCount = statistics?.applicationsByStatus?.["PENDING"] || 0;
     const acceptedCount = statistics?.applicationsByStatus?.["ACCEPTED"] || 0;
     const rejectedCount = statistics?.applicationsByStatus?.["REJECTED"] || 0;

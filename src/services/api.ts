@@ -1,3 +1,5 @@
+"use client";
+
 import { apiClient } from "@/lib/apiClient";
 import type {
     LoginRequest,
@@ -101,7 +103,7 @@ export const companyService = {
     },
 };
 
-// Resume Service
+// Resume Service — основной для страницы резюме
 export const resumeService = {
     getAll: async (page = 0, size = 10): Promise<PageResponse<ResumeDto>> => {
         const response = await apiClient.get<PageResponse<ResumeDto>>("/api/resumes", {
@@ -143,7 +145,7 @@ export const resumeService = {
     },
 };
 
-// Education Service
+// Education Service — для отображения образования в резюме
 export const educationService = {
     getByResume: async (resumeId: number): Promise<EducationDto[]> => {
         const response = await apiClient.get<EducationDto[]>(`/api/educations/resume/${resumeId}`);
@@ -161,7 +163,7 @@ export const educationService = {
     },
 };
 
-// Skill Service
+// Skill Service — для отображения навыков в резюме
 export const skillService = {
     getByResume: async (resumeId: number): Promise<SkillDto[]> => {
         const response = await apiClient.get<SkillDto[]>(`/api/skills/resume/${resumeId}`);
@@ -209,16 +211,18 @@ export const applicationService = {
         return response.data;
     },
 
-    reject: async (applicationId: number): Promise<ApplicationResponseDto> => {
+    reject: async (data: ApplicationRequestDto): Promise<ApplicationResponseDto> => {
         const response = await apiClient.post<ApplicationResponseDto>(
-            `/api/applications/${applicationId}/reject`
+            "/api/applications/reject",
+            data
         );
         return response.data;
     },
 
-    withdraw: async (applicationId: number): Promise<ApplicationResponseDto> => {
+    withdraw: async (data: ApplicationRequestDto): Promise<ApplicationResponseDto> => {
         const response = await apiClient.post<ApplicationResponseDto>(
-            `/api/applications/${applicationId}/withdraw`
+            "/api/applications/withdrawn",
+            data
         );
         return response.data;
     },
@@ -230,15 +234,15 @@ export const applicationService = {
         return response.data;
     },
 
-    getStatistics: async (): Promise<ApplicationStatisticsDto> => {
-        const response = await apiClient.get<ApplicationStatisticsDto>("/api/applications/statistics");
-        return response.data;
-    },
-
     getByEmployer: async (employerId: number): Promise<ApplicationResponseDto[]> => {
         const response = await apiClient.get<ApplicationResponseDto[]>(
             `/api/applications/employer/${employerId}`
         );
+        return response.data;
+    },
+
+    getStatistics: async (): Promise<ApplicationStatisticsDto> => {
+        const response = await apiClient.get<ApplicationStatisticsDto>("/api/applications/statistics");
         return response.data;
     },
 

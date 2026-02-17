@@ -145,14 +145,11 @@ const Header = () => {
                                             </div>
                                         </Link>
                                     ))}
-                                    {/* ✅ ИСПРАВЛЕНО: Правильный URL для мобильного меню */}
                                     <Link href={userRole === "EMPLOYER" ? "/employer/profile" : "/jobseeker/profile"}>
-                                        <div
-                                            className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all"
-                                            onClick={() => setIsMenuOpen(false)}
-                                        >
+                                        <Button variant="ghost" size="sm" className="hover:bg-gray-100">
+                                            <User className="h-4 w-4 mr-2" />
                                             Профиль
-                                        </div>
+                                        </Button>
                                     </Link>
                                     <button
                                         onClick={() => {
