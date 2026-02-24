@@ -1,143 +1,279 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { Search, DollarSign, Building2, Eye, Briefcase } from "lucide-react";
-import Button from "@/components/ui/Button";
-import Card, { CardContent } from "@/components/ui/Card";
-import { vacancyService } from "@/services/api";
-import type { VacancyDto, PageResponse } from "@/types";
-import toast from "react-hot-toast";
+import { useState, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { searchService, skillService, applicationService } from '@/services/api';
+import { VacancySearchResponse, VacancySearchRequest, SkillDto, SearchPageResponse } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
+import Link from 'next/link';
 
-export default function JobSeekerVacanciesPage() {
-    const [vacancies, setVacancies] = useState<VacancyDto[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [currentPage, setCurrentPage] = useState(0);
+const EXPERIENCE_OPTIONS = [
+    { label: 'Любой', value: '' },
+    { label: 'Без опыта', value: '0-1' },
+    { label: '1–3 года', value: '1-3' },
+    { label: '3–5 лет', value: '3-5' },
+    { label: '5+ лет', value: '5-100' },
+];
+
+export default function VacancySearchPage() {
+    const { user } = useAuth();
+    const [query, setQuery] = useState('');
+    const [location, setLocation] = useState('');
+    const [salaryMin, setSalaryMin] = useState('');
+    const [salaryMax, setSalaryMax] = useState('');
+    const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+    const [skillInput, setSkillInput] = useState('');
+    const [results, setResults] = useState<VacancySearchResponse[]>([]);
+    const [totalResults, setTotalResults] = useState(0);
+    const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [searched, setSearched] = useState(false);
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    const debounceRef = useRef<NodeJS.Timeout>();
 
-    useEffect(() => {
-        fetchVacancies();
-    }, [currentPage]);
-
-    const fetchVacancies = async () => {
-        setIsLoading(true);
+    const doSearch = useCallback(async (params: VacancySearchRequest) => {
+        setLoading(true);
         try {
-            const response: PageResponse<VacancyDto> = await vacancyService.getAll(currentPage, 10);
-            setVacancies(response.content || []);
-            setTotalPages(response.totalPages || 0);
-        } catch (error) {
-            console.error("Vacancies error:", error);
-            toast.error("Не удалось загрузить вакансии");
+            const res = await searchService.searchVacancies(params);
+            setResults(res.content);
+            setTotalElements(res.totalElements);
+            setTotalPages(res.totalPages);
+            setPage(res.currentPage);
+            setSearched(true);
+        } catch {
+            setResults([]);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
+    }, []);
+
+     
+    const [totalElements, setTotalElements] = useState(0);
+
+    const handleSearch = (p = 0) => {
+        const params: VacancySearchRequest = {
+            query: query || undefined,
+            location: location || undefined,
+            salaryMin: salaryMin ? Number(salaryMin) : undefined,
+            salaryMax: salaryMax ? Number(salaryMax) : undefined,
+            skills: selectedSkills.length ? selectedSkills : undefined,
+            page: p,
+            size: 10,
+        };
+        setPage(p);
+        doSearch(params);
     };
 
-    const filteredVacancies = vacancies.filter((vacancy) => {
-        const searchLower = searchTerm.toLowerCase();
-        const titleMatch = vacancy.title?.toLowerCase().includes(searchLower) || false;
-        const companyMatch = vacancy.companyName?.toLowerCase().includes(searchLower) || false;
-        const descMatch = vacancy.description?.toLowerCase().includes(searchLower) || false;
-
-        return titleMatch || companyMatch || descMatch;
-    });
+    const addSkillFilter = () => {
+        const t = skillInput.trim();
+        if (t && !selectedSkills.includes(t)) setSelectedSkills([...selectedSkills, t]);
+        setSkillInput('');
+    };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Найдите работу мечты</h1>
-                    <p className="text-gray-600">Доступно {vacancies.length} вакансий</p>
-                </motion.div>
+        <div className="min-h-screen bg-[#060810] text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+            <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');`}</style>
 
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
-                    <Card className="shadow-lg bg-white">
-                        <CardContent className="p-6">
-                            <div className="relative">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Поиск по названию, компании или описанию..."
-                                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+            <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-gradient-to-b from-blue-500/8 to-transparent rounded-full blur-3xl" />
+            </div>
 
-                {isLoading ? (
-                    <div className="flex justify-center items-center py-20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            <div className="relative max-w-5xl mx-auto px-6 py-12">
+                {/* Header */}
+                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 text-sm">⚡</div>
+                        <span className="text-blue-400 text-sm font-medium tracking-wider uppercase">Поиск вакансий</span>
                     </div>
-                ) : (
-                    <>
-                        <div className="space-y-4 mb-8">
-                            {filteredVacancies.length > 0 ? (
-                                filteredVacancies.map((vacancy, index) => (
-                                    <motion.div key={vacancy.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                                        <Card hover className="shadow-md hover:shadow-xl transition-all bg-white">
-                                            <CardContent className="p-6">
-                                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                                                    <div className="flex-1">
-                                                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{vacancy.title}</h3>
-                                                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
-                                                            <div className="flex items-center">
-                                                                <Building2 className="h-4 w-4 mr-1 text-blue-600" />
-                                                                {vacancy.companyName}
-                                                            </div>
-                                                            {vacancy.salary && vacancy.salary > 0 && (
-                                                                <div className="flex items-center text-green-600 font-medium">
-                                                                    <DollarSign className="h-4 w-4 mr-1" />
-                                                                    {vacancy.salary.toLocaleString()} ₽
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        {vacancy.description && (
-                                                            <p className="text-gray-700 line-clamp-2">{vacancy.description}</p>
+                    <h1 style={{ fontFamily: "'Space Mono', monospace" }} className="text-4xl font-bold">
+                        Найдите <span className="text-blue-400">работу мечты</span>
+                    </h1>
+                    <p className="text-white/40 mt-2">Powered by Elasticsearch — умный полнотекстовый поиск</p>
+                </motion.div>
+
+                {/* Search bar */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                            className="flex gap-3 mb-4">
+                    <div className="flex-1 relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30">🔍</span>
+                        <input
+                            value={query}
+                            onChange={e => setQuery(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleSearch(0)}
+                            placeholder="Должность, ключевые слова..."
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-4 text-white placeholder-white/30 focus:outline-none focus:border-blue-500/40 focus:bg-white/7 transition-all"
+                        />
+                    </div>
+                    <button
+                        onClick={() => setFiltersOpen(!filtersOpen)}
+                        className={`px-5 py-4 rounded-2xl border transition-all ${filtersOpen ? 'bg-blue-500/20 border-blue-500/40 text-blue-400' : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20'}`}>
+                        ⚙ Фильтры {selectedSkills.length + (salaryMin ? 1 : 0) + (location ? 1 : 0) > 0 &&
+                        <span className="ml-1 px-1.5 py-0.5 bg-blue-500 text-white text-xs rounded-full">
+                {selectedSkills.length + (salaryMin ? 1 : 0) + (location ? 1 : 0)}
+              </span>}
+                    </button>
+                    <button
+                        onClick={() => handleSearch(0)}
+                        disabled={loading}
+                        className="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-semibold transition-colors disabled:opacity-60">
+                        {loading ? '...' : 'Найти'}
+                    </button>
+                </motion.div>
+
+                {/* Filters panel */}
+                <AnimatePresence>
+                    {filtersOpen && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="overflow-hidden mb-4">
+                            <div className="p-5 bg-white/3 border border-white/10 rounded-2xl space-y-4">
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="text-xs text-white/40 mb-1 block">Город</label>
+                                        <input value={location} onChange={e => setLocation(e.target.value)}
+                                               placeholder="Москва, Санкт-Петербург..."
+                                               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40 transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-white/40 mb-1 block">Зарплата от (₽)</label>
+                                        <input type="number" value={salaryMin} onChange={e => setSalaryMin(e.target.value)}
+                                               placeholder="50 000"
+                                               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40 transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-white/40 mb-1 block">Зарплата до (₽)</label>
+                                        <input type="number" value={salaryMax} onChange={e => setSalaryMax(e.target.value)}
+                                               placeholder="200 000"
+                                               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40 transition-colors" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-white/40 mb-1 block">Навыки</label>
+                                    <div className="flex gap-2 mb-2">
+                                        <input value={skillInput} onChange={e => setSkillInput(e.target.value)}
+                                               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkillFilter(); } }}
+                                               placeholder="React, Python, Docker..."
+                                               className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40 transition-colors" />
+                                        <button onClick={addSkillFilter}
+                                                className="px-4 py-2 bg-blue-600/30 border border-blue-500/30 rounded-xl text-blue-400 text-sm hover:bg-blue-600/50 transition-colors">
+                                            +
+                                        </button>
+                                    </div>
+                                    {selectedSkills.length > 0 && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {selectedSkills.map(s => (
+                                                <span key={s} className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/15 border border-blue-500/30 rounded-full text-sm text-blue-300">
+                          {s}
+                                                    <button onClick={() => setSelectedSkills(selectedSkills.filter(x => x !== s))}
+                                                            className="text-blue-400/60 hover:text-red-400 transition-colors">×</button>
+                        </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Results */}
+                {loading && (
+                    <div className="flex flex-col gap-3 mt-6">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="h-32 bg-white/3 rounded-2xl animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+                        ))}
+                    </div>
+                )}
+
+                {!loading && searched && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2">
+                        <p className="text-white/40 text-sm mb-4">
+                            Найдено <span className="text-white/70 font-medium">{totalElements}</span> вакансий
+                        </p>
+
+                        {results.length === 0 ? (
+                            <div className="text-center py-20 text-white/30">
+                                <p className="text-5xl mb-4">🔭</p>
+                                <p className="text-lg">Ничего не найдено</p>
+                                <p className="text-sm mt-1">Попробуйте изменить запрос или фильтры</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <AnimatePresence>
+                                    {results.map((v, i) => (
+                                        <motion.div key={v.id}
+                                                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: i * 0.05 }}
+                                                    className="group p-5 bg-white/3 border border-white/8 hover:border-blue-500/30 hover:bg-white/5 rounded-2xl transition-all cursor-pointer"
+                                        >
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-3 mb-1">
+                                                        <h3 className="font-semibold text-white group-hover:text-blue-300 transition-colors truncate">
+                                                            {v.title}
+                                                        </h3>
+                                                        {v.salary && (
+                                                            <span className="shrink-0 text-sm text-green-400 bg-green-400/10 px-2.5 py-0.5 rounded-full">
+                                {v.salary.toLocaleString()} ₽
+                              </span>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <Link href={`/jobseeker/vacancies/${vacancy.id}`}>
-                                                            <Button className="shadow-md hover:shadow-lg transition-shadow">
-                                                                <Eye className="h-4 w-4 mr-2" />
-                                                                Подробнее
-                                                            </Button>
-                                                        </Link>
-                                                    </div>
+                                                    <p className="text-sm text-white/50 mb-1">{v.companyName}{v.location && ` · ${v.location}`}</p>
+                                                    {v.description && (
+                                                        <p className="text-sm text-white/40 line-clamp-2">{v.description}</p>
+                                                    )}
+                                                    {v.skills && v.skills.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1.5 mt-3">
+                                                            {v.skills.slice(0, 6).map(s => (
+                                                                <span key={s} className="px-2 py-0.5 bg-white/5 rounded-md text-xs text-white/50">
+                                  {s}
+                                </span>
+                                                            ))}
+                                                            {v.skills.length > 6 && (
+                                                                <span className="px-2 py-0.5 text-xs text-white/30">+{v.skills.length - 6}</span>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </CardContent>
-                                        </Card>
-                                    </motion.div>
-                                ))
-                            ) : (
-                                <Card className="shadow-lg bg-white">
-                                    <CardContent className="p-12 text-center">
-                                        <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                        <h3 className="text-lg font-medium text-gray-900 mb-2">Вакансии не найдены</h3>
-                                        <p className="text-gray-600">{searchTerm ? "Попробуйте изменить критерии поиска" : "Проверьте позже для новых возможностей"}</p>
-                                    </CardContent>
-                                </Card>
-                            )}
-                        </div>
+                                                <Link href={`/jobseeker/vacancies/${v.id}`}
+                                                      className="shrink-0 px-4 py-2 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-400 text-sm hover:bg-blue-600/40 transition-colors">
+                                                    Подробнее →
+                                                </Link>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
 
-                        {totalPages > 1 && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="flex justify-center gap-2">
-                                <Button variant="outline" onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))} disabled={currentPage === 0} className="shadow-md hover:shadow-lg transition-shadow">
-                                    Назад
-                                </Button>
-                                <div className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-md">
-                                    <span className="text-sm text-gray-700 font-medium">Страница {currentPage + 1} из {totalPages}</span>
-                                </div>
-                                <Button variant="outline" onClick={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))} disabled={currentPage >= totalPages - 1} className="shadow-md hover:shadow-lg transition-shadow">
-                                    Далее
-                                </Button>
-                            </motion.div>
+                                {/* Pagination */}
+                                {totalPages > 1 && (
+                                    <div className="flex items-center justify-center gap-2 pt-6">
+                                        <button onClick={() => handleSearch(page - 1)} disabled={page === 0}
+                                                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white/60 disabled:opacity-30 hover:border-white/20 transition-colors">
+                                            ← Пред
+                                        </button>
+                                        <span className="text-sm text-white/40 px-4">
+                      {page + 1} / {totalPages}
+                    </span>
+                                        <button onClick={() => handleSearch(page + 1)} disabled={page >= totalPages - 1}
+                                                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white/60 disabled:opacity-30 hover:border-white/20 transition-colors">
+                                            След →
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         )}
-                    </>
+                    </motion.div>
+                )}
+
+                {/* Initial state */}
+                {!loading && !searched && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+                                className="text-center py-20 text-white/20">
+                        <p className="text-6xl mb-4">💼</p>
+                        <p className="text-lg">Введите запрос для поиска вакансий</p>
+                        <p className="text-sm mt-1">Используйте фильтры для уточнения результатов</p>
+                    </motion.div>
                 )}
             </div>
         </div>

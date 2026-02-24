@@ -1,376 +1,301 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import Card, { CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
-import { resumeService, educationService, skillService } from "@/services/api";
-import type { ResumeDto, EducationDto, SkillDto } from "@/types";
-import { handleApiError } from "@/lib/apiClient";
-import toast from "react-hot-toast";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { resumeService, skillService, educationService } from '@/services/api';
+import { EducationDto } from '@/types';
 
-type FormData = {
-    title: string;
-    summary: string;
-    experienceYears: number;
-    contactEmail: string;
-    contactPhone: string;
-    isPublished: boolean;
-    education: Array<Omit<EducationDto, "id" | "resumeId">>;
-    skills: Array<{ name: string }>;
-};
+interface EducationForm {
+    institution: string;
+    degree: string;
+    fieldOfStudy: string;
+    startYear: number;
+    endYear?: number;
+}
 
 export default function CreateResumePage() {
-    const { userId } = useAuth();
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
+    const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const {
-        register,
-        handleSubmit,
-        control,
-        formState: { errors },
-    } = useForm<FormData>({
-        defaultValues: {
-            isPublished: false,
-            education: [{ institution: "", degree: "", fieldOfStudy: "", startYear: 2020, endYear: 2024 }],
-            skills: [{ name: "" }],
-        },
+    // Step 1: Basic info
+    const [title, setTitle] = useState('');
+    const [summary, setSummary] = useState('');
+    const [experienceYears, setExperienceYears] = useState(0);
+    const [contactEmail, setContactEmail] = useState('');
+    const [contactPhone, setContactPhone] = useState('');
+
+    // Step 2: Skills
+    const [skillInput, setSkillInput] = useState('');
+    const [skills, setSkills] = useState<string[]>([]);
+
+    // Step 3: Education
+    const [educations, setEducations] = useState<EducationForm[]>([]);
+    const [eduForm, setEduForm] = useState<EducationForm>({
+        institution: '',
+        degree: '',
+        fieldOfStudy: '',
+        startYear: new Date().getFullYear(),
     });
 
-    const { fields: educationFields, append: appendEducation, remove: removeEducation } = useFieldArray({
-        control,
-        name: "education",
-    });
-
-    const { fields: skillFields, append: appendSkill, remove: removeSkill } = useFieldArray({
-        control,
-        name: "skills",
-    });
-
-    const onSubmit = async (data: FormData) => {
-        if (!userId) {
-            toast.error("Пользователь не авторизован");
-            return;
+    const addSkill = () => {
+        const trimmed = skillInput.trim();
+        if (trimmed && !skills.includes(trimmed)) {
+            setSkills([...skills, trimmed]);
         }
+        setSkillInput('');
+    };
 
-        setIsLoading(true);
-        try {
-            const resumePayload: Omit<ResumeDto, "id"> = {
-                userId,
-                title: data.title,
-                summary: data.summary,
-                experienceYears: data.experienceYears,
-                contactEmail: data.contactEmail,
-                contactPhone: data.contactPhone,
-                isPublished: data.isPublished,
-            };
+    const removeSkill = (s: string) => setSkills(skills.filter(x => x !== s));
 
-            const createdResume = await resumeService.create(resumePayload);
-
-            if (!createdResume?.id) {
-                throw new Error("Resume creation failed - no ID returned");
-            }
-
-            for (const edu of data.education) {
-                if (edu.institution && edu.degree && edu.fieldOfStudy) {
-                    try {
-                        await educationService.create({
-                            ...edu,
-                            resumeId: createdResume.id,
-                        });
-                    } catch (error) {
-                        console.error("Failed to create education:", error);
-                    }
-                }
-            }
-
-            for (const skill of data.skills) {
-                if (skill.name.trim()) {
-                    try {
-                        await skillService.create({
-                            name: skill.name,
-                            resumeId: createdResume.id,
-                        });
-                    } catch (error) {
-                        console.error("Failed to create skill:", error);
-                    }
-                }
-            }
-
-            toast.success("Резюме успешно создано!");
-            router.push("/jobseeker/resumes");
-        } catch (error) {
-            console.error("Resume creation error:", error);
-            toast.error(handleApiError(error));
-        } finally {
-            setIsLoading(false);
+    const addEducation = () => {
+        if (eduForm.institution && eduForm.degree) {
+            setEducations([...educations, { ...eduForm }]);
+            setEduForm({ institution: '', degree: '', fieldOfStudy: '', startYear: new Date().getFullYear() });
         }
     };
 
+    const handleSubmit = async () => {
+        if (!title) return setError('Введите название резюме');
+        setLoading(true);
+        setError('');
+
+        try {
+            // 1. Create resume
+            const resume = await resumeService.create({
+                userId: 0, // will be set by backend from JWT
+                title,
+                summary,
+                experienceYears,
+                contactEmail,
+                contactPhone,
+                isPublished: false,
+            });
+
+            // 2. Add skills via find-or-create pattern, then link to resume
+            for (const name of skills) {
+                const skill = await skillService.findOrCreate(name);
+                await resumeService.addSkill(resume.id, skill.id);
+            }
+
+            // 3. Add education records
+            for (const edu of educations) {
+                await educationService.create(resume.id, {
+                    ...edu,
+                    resumeId: resume.id,
+                });
+            }
+
+            router.push('/jobseeker/resumes');
+        } catch (e: any) {
+            setError(e?.response?.data?.message || 'Ошибка при создании резюме');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const steps = ['Основная информация', 'Навыки', 'Образование'];
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-6"
-                >
-                    <Link href="/jobseeker/resumes">
-                        <Button variant="ghost" size="sm" className="hover:bg-white">
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Назад к резюме
-                        </Button>
-                    </Link>
-                </motion.div>
+        <div className="min-h-screen bg-[#0a0a0f] text-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@600;700;800&display=swap');`}</style>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                >
-                    <Card className="shadow-xl bg-white">
-                        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
-                            <CardTitle>Создайте свое резюме</CardTitle>
-                            <CardDescription>
-                                Создайте полное резюме для подачи заявок на вакансии
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">Основная информация</h3>
-
-                                    <Input
-                                        label="Название резюме"
-                                        placeholder="например, Старший разработчик ПО"
-                                        required
-                                        error={errors.title?.message}
-                                        {...register("title", {
-                                            required: "Название обязательно",
-                                            minLength: {
-                                                value: 3,
-                                                message: "Название должно содержать минимум 3 символа",
-                                            },
-                                            maxLength: {
-                                                value: 255,
-                                                message: "Название должно содержать максимум 255 символов",
-                                            },
-                                        })}
-                                    />
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Профессиональное резюме
-                                        </label>
-                                        <textarea
-                                            rows={5}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                            placeholder="Краткий обзор вашего опыта и навыков..."
-                                            {...register("summary", {
-                                                maxLength: {
-                                                    value: 5000,
-                                                    message: "Резюме должно содержать максимум 5000 символов",
-                                                },
-                                            })}
-                                        />
-                                        {errors.summary && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.summary.message}</p>
-                                        )}
-                                    </div>
-
-                                    <Input
-                                        label="Лет опыта"
-                                        type="number"
-                                        placeholder="например, 5"
-                                        error={errors.experienceYears?.message}
-                                        {...register("experienceYears", {
-                                            valueAsNumber: true,
-                                            min: {
-                                                value: 0,
-                                                message: "Опыт не может быть отрицательным",
-                                            },
-                                        })}
-                                    />
-
-                                    <Input
-                                        label="Контактный email"
-                                        type="email"
-                                        placeholder="ivan@example.ru"
-                                        error={errors.contactEmail?.message}
-                                        {...register("contactEmail", {
-                                            pattern: {
-                                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                message: "Неверный формат email",
-                                            },
-                                        })}
-                                    />
-
-                                    <Input
-                                        label="Контактный телефон"
-                                        type="tel"
-                                        placeholder="+79001234567"
-                                        error={errors.contactPhone?.message}
-                                        {...register("contactPhone", {
-                                            pattern: {
-                                                value: /^[+]?[- 0-9()]{7,20}$/,
-                                                message: "Неверный формат телефона",
-                                            },
-                                        })}
-                                    />
-
-                                    <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
-                                        <input
-                                            type="checkbox"
-                                            id="isPublished"
-                                            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                            {...register("isPublished")}
-                                        />
-                                        <label htmlFor="isPublished" className="text-sm font-medium text-gray-900 cursor-pointer">
-                                            Опубликовать резюме (работодатели смогут его увидеть)
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900">Образование</h3>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => appendEducation({ institution: "", degree: "", fieldOfStudy: "", startYear: 2020, endYear: 2024 })}
-                                            className="hover:bg-blue-50"
-                                        >
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            Добавить образование
-                                        </Button>
-                                    </div>
-
-                                    {educationFields.map((field, index) => (
-                                        <Card key={field.id} className="border-2 shadow-md bg-white">
-                                            <CardContent className="p-4 space-y-4">
-                                                <div className="flex justify-between items-center">
-                                                    <h4 className="font-medium text-gray-900">Образование {index + 1}</h4>
-                                                    {educationFields.length > 1 && (
-                                                        <Button
-                                                            type="button"
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => removeEducation(index)}
-                                                            className="hover:bg-red-50"
-                                                        >
-                                                            <Trash2 className="h-4 w-4 text-red-600" />
-                                                        </Button>
-                                                    )}
-                                                </div>
-
-                                                <Input
-                                                    label="Учебное заведение"
-                                                    placeholder="МГУ им. Ломоносова"
-                                                    {...register(`education.${index}.institution`)}
-                                                />
-
-                                                <Input
-                                                    label="Степень"
-                                                    placeholder="Бакалавр наук"
-                                                    {...register(`education.${index}.degree`)}
-                                                />
-
-                                                <Input
-                                                    label="Специальность"
-                                                    placeholder="Информатика"
-                                                    {...register(`education.${index}.fieldOfStudy`)}
-                                                />
-
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <Input
-                                                        label="Год начала"
-                                                        type="number"
-                                                        placeholder="2020"
-                                                        {...register(`education.${index}.startYear`, {
-                                                            valueAsNumber: true,
-                                                        })}
-                                                    />
-
-                                                    <Input
-                                                        label="Год окончания (необязательно)"
-                                                        type="number"
-                                                        placeholder="2024"
-                                                        {...register(`education.${index}.endYear`, {
-                                                            valueAsNumber: true,
-                                                        })}
-                                                    />
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900">Навыки</h3>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => appendSkill({ name: "" })}
-                                            className="hover:bg-green-50"
-                                        >
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            Добавить навык
-                                        </Button>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {skillFields.map((field, index) => (
-                                            <div key={field.id} className="flex gap-2">
-                                                <Input
-                                                    placeholder="например, JavaScript, Python и т.д."
-                                                    {...register(`skills.${index}.name`)}
-                                                />
-                                                {skillFields.length > 1 && (
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => removeSkill(index)}
-                                                        className="hover:bg-red-50"
-                                                    >
-                                                        <Trash2 className="h-4 w-4 text-red-600" />
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-4 pt-6 border-t">
-                                    <Button
-                                        type="submit"
-                                        className="flex-1 shadow-md hover:shadow-lg transition-shadow"
-                                        isLoading={isLoading}
-                                    >
-                                        <Save className="h-4 w-4 mr-2" />
-                                        Создать резюме
-                                    </Button>
-                                    <Link href="/jobseeker/resumes" className="flex-1">
-                                        <Button type="button" variant="outline" className="w-full">
-                                            Отмена
-                                        </Button>
-                                    </Link>
-                                </div>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+            {/* Background */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl" />
+                <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl" />
             </div>
+
+            <div className="relative max-w-2xl mx-auto px-6 py-12">
+                {/* Header */}
+                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
+                    <h1 style={{ fontFamily: "'Syne', sans-serif" }} className="text-3xl font-bold text-white mb-2">
+                        Создать резюме
+                    </h1>
+                    <p className="text-white/50">Заполните информацию о себе</p>
+                </motion.div>
+
+                {/* Steps indicator */}
+                <div className="flex gap-2 mb-8">
+                    {steps.map((s, i) => (
+                        <div key={i} className="flex-1">
+                            <div className={`h-1 rounded-full transition-all duration-500 ${i + 1 <= step ? 'bg-violet-500' : 'bg-white/10'}`} />
+                            <span className={`text-xs mt-1 block ${i + 1 === step ? 'text-violet-400' : 'text-white/30'}`}>{s}</span>
+                        </div>
+                    ))}
+                </div>
+
+                {error && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                className="mb-6 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                        {error}
+                    </motion.div>
+                )}
+
+                <AnimatePresence mode="wait">
+                    {/* Step 1 */}
+                    {step === 1 && (
+                        <motion.div key="step1" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -40 }} className="space-y-5">
+                            <Field label="Название резюме *" value={title} onChange={setTitle}
+                                   placeholder="Например: Senior Frontend Developer" />
+                            <Field label="О себе" value={summary} onChange={setSummary}
+                                   placeholder="Краткое описание вашего опыта и целей" multiline />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-sm text-white/50 mb-1 block">Опыт работы (лет)</label>
+                                    <input type="number" min={0} max={50} value={experienceYears}
+                                           onChange={e => setExperienceYears(Number(e.target.value))}
+                                           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-colors" />
+                                </div>
+                                <Field label="Email для связи" value={contactEmail} onChange={setContactEmail}
+                                       placeholder="your@email.com" />
+                            </div>
+                            <Field label="Телефон для связи" value={contactPhone} onChange={setContactPhone}
+                                   placeholder="+7 900 000 00 00" />
+                        </motion.div>
+                    )}
+
+                    {/* Step 2 */}
+                    {step === 2 && (
+                        <motion.div key="step2" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -40 }} className="space-y-5">
+                            <div>
+                                <label className="text-sm text-white/50 mb-1 block">Добавить навык</label>
+                                <div className="flex gap-2">
+                                    <input value={skillInput} onChange={e => setSkillInput(e.target.value)}
+                                           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
+                                           placeholder="Введите название навыка..."
+                                           className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-colors" />
+                                    <button onClick={addSkill}
+                                            className="px-5 py-3 bg-violet-600 hover:bg-violet-500 rounded-xl font-medium text-sm transition-colors">
+                                        + Добавить
+                                    </button>
+                                </div>
+                            </div>
+
+                            {skills.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                    <AnimatePresence>
+                                        {skills.map(s => (
+                                            <motion.span key={s} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                                                         exit={{ scale: 0, opacity: 0 }}
+                                                         className="flex items-center gap-2 px-3 py-1.5 bg-violet-500/15 border border-violet-500/30 rounded-full text-sm text-violet-300">
+                                                {s}
+                                                <button onClick={() => removeSkill(s)} className="text-violet-400/60 hover:text-red-400 transition-colors">×</button>
+                                            </motion.span>
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+
+                            {skills.length === 0 && (
+                                <p className="text-white/30 text-sm py-6 text-center border border-dashed border-white/10 rounded-xl">
+                                    Навыки не добавлены. Нажмите Enter или кнопку для добавления.
+                                </p>
+                            )}
+                        </motion.div>
+                    )}
+
+                    {/* Step 3 */}
+                    {step === 3 && (
+                        <motion.div key="step3" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -40 }} className="space-y-5">
+                            <div className="p-4 bg-white/3 border border-white/10 rounded-xl space-y-4">
+                                <h3 className="text-sm font-medium text-white/70">Добавить место учёбы</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <Field label="Учебное заведение" value={eduForm.institution}
+                                           onChange={v => setEduForm({ ...eduForm, institution: v })}
+                                           placeholder="МГУ, МФТИ..." />
+                                    <Field label="Степень/Уровень" value={eduForm.degree}
+                                           onChange={v => setEduForm({ ...eduForm, degree: v })}
+                                           placeholder="Бакалавр, Магистр..." />
+                                    <Field label="Специальность" value={eduForm.fieldOfStudy}
+                                           onChange={v => setEduForm({ ...eduForm, fieldOfStudy: v })}
+                                           placeholder="Информатика..." />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label className="text-xs text-white/50 mb-1 block">С года</label>
+                                            <input type="number" value={eduForm.startYear}
+                                                   onChange={e => setEduForm({ ...eduForm, startYear: Number(e.target.value) })}
+                                                   className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-violet-500/50 transition-colors" />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-white/50 mb-1 block">По год</label>
+                                            <input type="number" value={eduForm.endYear || ''}
+                                                   onChange={e => setEduForm({ ...eduForm, endYear: Number(e.target.value) || undefined })}
+                                                   placeholder="—"
+                                                   className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-violet-500/50 transition-colors" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onClick={addEducation}
+                                        className="w-full py-2 border border-dashed border-violet-500/40 rounded-lg text-violet-400 text-sm hover:bg-violet-500/10 transition-colors">
+                                    + Добавить
+                                </button>
+                            </div>
+
+                            <div className="space-y-2">
+                                <AnimatePresence>
+                                    {educations.map((edu, i) => (
+                                        <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    className="flex items-start justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                                            <div>
+                                                <p className="font-medium text-sm text-white">{edu.institution}</p>
+                                                <p className="text-xs text-white/50">{edu.degree}, {edu.fieldOfStudy}</p>
+                                                <p className="text-xs text-white/30">{edu.startYear} — {edu.endYear || 'наст. время'}</p>
+                                            </div>
+                                            <button onClick={() => setEducations(educations.filter((_, j) => j !== i))}
+                                                    className="text-white/30 hover:text-red-400 transition-colors text-lg ml-4">×</button>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Navigation */}
+                <div className="flex gap-3 mt-8">
+                    {step > 1 && (
+                        <button onClick={() => setStep(step - 1)}
+                                className="flex-1 py-3 border border-white/10 rounded-xl text-white/60 hover:border-white/20 transition-colors">
+                            Назад
+                        </button>
+                    )}
+                    {step < 3 ? (
+                        <button onClick={() => { if (step === 1 && !title) { setError('Введите название резюме'); return; } setError(''); setStep(step + 1); }}
+                                className="flex-1 py-3 bg-violet-600 hover:bg-violet-500 rounded-xl font-medium transition-colors">
+                            Далее
+                        </button>
+                    ) : (
+                        <button onClick={handleSubmit} disabled={loading}
+                                className="flex-1 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl font-medium transition-all disabled:opacity-50">
+                            {loading ? 'Создание...' : 'Создать резюме'}
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function Field({ label, value, onChange, placeholder, multiline }: {
+    label: string; value: string; onChange: (v: string) => void;
+    placeholder?: string; multiline?: boolean;
+}) {
+    const cls = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-colors resize-none";
+    return (
+        <div>
+            <label className="text-sm text-white/50 mb-1 block">{label}</label>
+            {multiline ? (
+                <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={3} className={cls} />
+            ) : (
+                <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className={cls} />
+            )}
         </div>
     );
 }

@@ -1,255 +1,195 @@
-"use client";
+import axios from 'axios';
+import {
+    LoginRequest, RegisterRequest, AuthResponse,
+    UserDto, VacancyDto, CompanyDto, ResumeDto, EducationDto, SkillDto,
+    ApplicationRequestDto, ApplicationResponseDto, ApplicationStatisticsDto,
+    VacancySearchRequest, VacancySearchResponse,
+    ResumeSearchRequest, ResumeSearchResponse,
+    SearchPageResponse, PageResponse
+} from '@/types';
 
-import { apiClient } from "@/lib/apiClient";
-import type {
-    LoginRequest,
-    RegisterRequest,
-    AuthResponse,
-    VacancyDto,
-    CompanyDto,
-    ResumeDto,
-    EducationDto,
-    SkillDto,
-    ApplicationRequestDto,
-    ApplicationResponseDto,
-    ApplicationStatisticsDto,
-    PageResponse,
-} from "@/types";
+const api = axios.create({
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+    headers: { 'Content-Type': 'application/json' },
+});
 
-// Auth Service
+api.interceptors.request.use((config) => {
+    if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('token');
+        if (token) config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+api.interceptors.response.use(
+    (r) => r,
+    (err) => {
+        if (err.response?.status === 401 && typeof window !== 'undefined') {
+            localStorage.removeItem('token');
+            window.location.href = '/auth/login';
+        }
+        return Promise.reject(err);
+    }
+);
+
+// ======================== AUTH ========================
 export const authService = {
-    register: async (data: RegisterRequest): Promise<AuthResponse> => {
-        const response = await apiClient.post<AuthResponse>("/api/auth/register", data);
-        return response.data;
-    },
-
-    login: async (data: LoginRequest): Promise<AuthResponse> => {
-        const response = await apiClient.post<AuthResponse>("/api/auth/login", data);
-        return response.data;
-    },
-
-    validateToken: async (token: string): Promise<boolean> => {
-        const response = await apiClient.get<boolean>("/api/auth/validate", {
-            params: { token },
-        });
-        return response.data;
-    },
+    login: (data: LoginRequest) =>
+        api.post<AuthResponse>('/api/auth/login', data).then(r => r.data),
+    register: (data: RegisterRequest) =>
+        api.post<AuthResponse>('/api/auth/register', data).then(r => r.data),
 };
 
-// Vacancy Service
+// ======================== USER ========================
+export const userService = {
+    getMe: () => api.get<UserDto>('/api/users/me').then(r => r.data),
+    updateMe: (data: Partial<UserDto>) =>
+        api.put<UserDto>('/api/users/me', data).then(r => r.data),
+    getById: (id: number) => api.get<UserDto>(`/api/users/${id}`).then(r => r.data),
+};
+
+// ======================== VACANCY ========================
 export const vacancyService = {
-    getAll: async (page = 0, size = 10): Promise<PageResponse<VacancyDto>> => {
-        const response = await apiClient.get<PageResponse<VacancyDto>>("/api/vacancies", {
-            params: { page, size },
-        });
-        return response.data;
-    },
-
-    getById: async (id: number): Promise<VacancyDto> => {
-        const response = await apiClient.get<VacancyDto>(`/api/vacancies/${id}`);
-        return response.data;
-    },
-
-    getByEmployer: async (employerId: number, page = 0, size = 10): Promise<PageResponse<VacancyDto>> => {
-        const response = await apiClient.get<PageResponse<VacancyDto>>(
-            `/api/vacancies/employer/${employerId}`,
-            { params: { page, size } }
-        );
-        return response.data;
-    },
-
-    create: async (data: Omit<VacancyDto, "id">): Promise<VacancyDto> => {
-        const response = await apiClient.post<VacancyDto>("/api/vacancies", data);
-        return response.data;
-    },
-
-    update: async (data: VacancyDto): Promise<VacancyDto> => {
-        const response = await apiClient.post<VacancyDto>("/api/vacancies/update", data);
-        return response.data;
-    },
-
-    publish: async (id: number): Promise<void> => {
-        await apiClient.patch(`/api/vacancies/${id}/publish`);
-    },
-
-    unpublish: async (id: number): Promise<void> => {
-        await apiClient.patch(`/api/vacancies/${id}/unpublish`);
-    },
-
-    delete: async (id: number): Promise<void> => {
-        await apiClient.delete(`/api/vacancies/${id}`);
-    },
+    getAll: (page = 0, size = 10) =>
+        api.get<PageResponse<VacancyDto>>('/api/vacancies', { params: { page, size } }).then(r => r.data),
+    getById: (id: number) => api.get<VacancyDto>(`/api/vacancies/${id}`).then(r => r.data),
+    getByEmployer: (employerId: number, page = 0, size = 10) =>
+        api.get<PageResponse<VacancyDto>>('/api/vacancies', { params: { employerId, page, size } }).then(r => r.data),
+    getPublished: (page = 0, size = 10) =>
+        api.get<PageResponse<VacancyDto>>('/api/vacancies/published', { params: { page, size } }).then(r => r.data),
+    create: (data: Omit<VacancyDto, 'id'>) =>
+        api.post<VacancyDto>('/api/vacancies', data).then(r => r.data),
+    update: (id: number, data: Partial<VacancyDto>) =>
+        api.put<VacancyDto>(`/api/vacancies/${id}`, data).then(r => r.data),
+    delete: (id: number) => api.delete(`/api/vacancies/${id}`),
+    publish: (id: number) => api.patch(`/api/vacancies/${id}/publish`),
+    unpublish: (id: number) => api.patch(`/api/vacancies/${id}/unpublish`),
+    // Skill management
+    getSkillIds: (id: number) =>
+        api.get<number[]>(`/api/vacancies/${id}/skills`).then(r => r.data),
+    addSkill: (id: number, skillId: number) =>
+        api.post(`/api/vacancies/${id}/skills`, { skillId }),
+    removeSkill: (id: number, skillId: number) =>
+        api.delete(`/api/vacancies/${id}/skills/${skillId}`),
+    setSkills: (id: number, skillIds: number[]) =>
+        api.put(`/api/vacancies/${id}/skills`, { skillIds }),
 };
 
-// Company Service
+// ======================== COMPANY ========================
 export const companyService = {
-    getAll: async (): Promise<CompanyDto[]> => {
-        const response = await apiClient.get<CompanyDto[]>("/api/companies");
-        return response.data;
-    },
-
-    getById: async (id: number): Promise<CompanyDto> => {
-        const response = await apiClient.get<CompanyDto>(`/api/companies/${id}`);
-        return response.data;
-    },
-
-    create: async (data: Omit<CompanyDto, "id">): Promise<CompanyDto> => {
-        const response = await apiClient.post<CompanyDto>("/api/companies", data);
-        return response.data;
-    },
-
-    delete: async (id: number): Promise<void> => {
-        await apiClient.delete(`/api/companies/${id}`);
-    },
+    getAll: () => api.get<CompanyDto[]>('/api/companies').then(r => r.data),
+    getById: (id: number) => api.get<CompanyDto>(`/api/companies/${id}`).then(r => r.data),
+    getMyCompany: () => api.get<CompanyDto>('/api/companies/my').then(r => r.data),
+    create: (data: Omit<CompanyDto, 'id'>) =>
+        api.post<CompanyDto>('/api/companies', data).then(r => r.data),
+    update: (id: number, data: Partial<CompanyDto>) =>
+        api.put<CompanyDto>(`/api/companies/${id}`, data).then(r => r.data),
 };
 
-// Resume Service — основной для страницы резюме
+// ======================== RESUME ========================
 export const resumeService = {
-    getAll: async (page = 0, size = 10): Promise<PageResponse<ResumeDto>> => {
-        const response = await apiClient.get<PageResponse<ResumeDto>>("/api/resumes", {
-            params: { page, size },
-        });
-        return response.data;
-    },
-
-    getById: async (id: number): Promise<ResumeDto> => {
-        const response = await apiClient.get<ResumeDto>(`/api/resumes/${id}`);
-        return response.data;
-    },
-
-    getByUser: async (userId: number): Promise<ResumeDto[]> => {
-        const response = await apiClient.get<ResumeDto[]>(`/api/resumes/user/${userId}`);
-        return response.data;
-    },
-
-    create: async (data: Omit<ResumeDto, "id">): Promise<ResumeDto> => {
-        const response = await apiClient.post<ResumeDto>("/api/resumes", data);
-        return response.data;
-    },
-
-    update: async (data: ResumeDto): Promise<ResumeDto> => {
-        const response = await apiClient.post<ResumeDto>("/api/resumes/update", data);
-        return response.data;
-    },
-
-    publish: async (id: number): Promise<void> => {
-        await apiClient.patch(`/api/resumes/${id}/publish`);
-    },
-
-    unpublish: async (id: number): Promise<void> => {
-        await apiClient.patch(`/api/resumes/${id}/unpublish`);
-    },
-
-    delete: async (id: number): Promise<void> => {
-        await apiClient.delete(`/api/resumes/${id}`);
-    },
+    getAll: (page = 0, size = 10) =>
+        api.get<PageResponse<ResumeDto>>('/api/resumes', { params: { page, size } }).then(r => r.data),
+    getById: (id: number) => api.get<ResumeDto>(`/api/resumes/${id}`).then(r => r.data),
+    getMy: () => api.get<ResumeDto[]>('/api/resumes/my').then(r => r.data),
+    create: (data: Omit<ResumeDto, 'id'>) =>
+        api.post<ResumeDto>('/api/resumes', data).then(r => r.data),
+    update: (id: number, data: Partial<ResumeDto>) =>
+        api.put<ResumeDto>(`/api/resumes/${id}`, data).then(r => r.data),
+    delete: (id: number) => api.delete(`/api/resumes/${id}`),
+    publish: (id: number) => api.patch(`/api/resumes/${id}/publish`),
+    unpublish: (id: number) => api.patch(`/api/resumes/${id}/unpublish`),
+    // Skill management — FIXED: uses proper two-step fetch
+    getSkillIds: (id: number): Promise<number[]> =>
+        api.get<number[]>(`/api/resumes/${id}/skills`).then(r => r.data),
+    addSkill: (resumeId: number, skillId: number) =>
+        api.post(`/api/resumes/${resumeId}/skills`, { skillId }),
+    removeSkill: (resumeId: number, skillId: number) =>
+        api.delete(`/api/resumes/${resumeId}/skills/${skillId}`),
+    setSkills: (resumeId: number, skillIds: number[]) =>
+        api.put(`/api/resumes/${resumeId}/skills`, { skillIds }),
 };
 
-// Education Service — для отображения образования в резюме
+// ======================== EDUCATION ========================
 export const educationService = {
-    getByResume: async (resumeId: number): Promise<EducationDto[]> => {
-        const response = await apiClient.get<EducationDto[]>(`/api/educations/resume/${resumeId}`);
-        return response.data;
-    },
-
-    create: async (data: Omit<EducationDto, "id">): Promise<EducationDto> => {
-        const response = await apiClient.post<EducationDto>("/api/educations", data);
-        return response.data;
-    },
-
-    update: async (id: number, data: EducationDto): Promise<EducationDto> => {
-        const response = await apiClient.put<EducationDto>(`/api/educations/${id}`, data);
-        return response.data;
-    },
+    getByResume: (resumeId: number) =>
+        api.get<EducationDto[]>(`/api/resumes/${resumeId}/education`).then(r => r.data),
+    create: (resumeId: number, data: Omit<EducationDto, 'id'>) =>
+        api.post<EducationDto>(`/api/resumes/${resumeId}/education`, data).then(r => r.data),
+    update: (resumeId: number, id: number, data: Partial<EducationDto>) =>
+        api.put<EducationDto>(`/api/resumes/${resumeId}/education/${id}`, data).then(r => r.data),
+    delete: (resumeId: number, id: number) =>
+        api.delete(`/api/resumes/${resumeId}/education/${id}`),
 };
 
-// Skill Service — для отображения навыков в резюме
+// ======================== SKILL ========================
+// FIXED: Backend stores skills as IDs in entities — use two-step pattern
 export const skillService = {
-    getByResume: async (resumeId: number): Promise<SkillDto[]> => {
-        const response = await apiClient.get<SkillDto[]>(`/api/skills/resume/${resumeId}`);
-        return response.data;
+    getAll: () => api.get<SkillDto[]>('/api/skills').then(r => r.data),
+    getById: (id: number) => api.get<SkillDto>(`/api/skills/${id}`).then(r => r.data),
+    // FIXED: only sends {name}, no resumeId
+    create: (name: string) =>
+        api.post<SkillDto>('/api/skills', { name }).then(r => r.data),
+    update: (id: number, name: string) =>
+        api.put<SkillDto>(`/api/skills/${id}`, { name }).then(r => r.data),
+    delete: (id: number) => api.delete(`/api/skills/${id}`),
+    // Get skill names from a list of IDs
+    getNamesByIds: (ids: number[]): Promise<string[]> => {
+        if (!ids || ids.length === 0) return Promise.resolve([]);
+        return api.get<string[]>('/api/skills/names/by-ids', {
+            params: { ids: ids.join(',') },
+        }).then(r => r.data);
     },
-
-    create: async (data: Omit<SkillDto, "id">): Promise<SkillDto> => {
-        const response = await apiClient.post<SkillDto>("/api/skills", data);
-        return response.data;
+    // Get full SkillDto objects by IDs (fetches all then filters)
+    getByIds: async (ids: number[]): Promise<SkillDto[]> => {
+        if (!ids || ids.length === 0) return [];
+        const all = await api.get<SkillDto[]>('/api/skills').then(r => r.data);
+        return all.filter(s => ids.includes(s.id));
     },
-
-    update: async (id: number, data: SkillDto): Promise<SkillDto> => {
-        const response = await apiClient.put<SkillDto>(`/api/skills/${id}`, data);
-        return response.data;
+    // FIXED: Helper to get skills for a resume (replaces old getByResume)
+    getSkillsForResume: async (resumeId: number): Promise<SkillDto[]> => {
+        const ids = await resumeService.getSkillIds(resumeId);
+        return skillService.getByIds(ids);
     },
-
-    delete: async (id: number): Promise<void> => {
-        await apiClient.delete(`/api/skills/${id}`);
+    // Helper to get skills for a vacancy
+    getSkillsForVacancy: async (vacancyId: number): Promise<SkillDto[]> => {
+        const ids = await vacancyService.getSkillIds(vacancyId);
+        return skillService.getByIds(ids);
+    },
+    // Ensure a skill exists by name (find or create)
+    findOrCreate: async (name: string): Promise<SkillDto> => {
+        const all = await api.get<SkillDto[]>('/api/skills').then(r => r.data);
+        const existing = all.find(s => s.name.toLowerCase() === name.toLowerCase());
+        if (existing) return existing;
+        return api.post<SkillDto>('/api/skills', { name }).then(r => r.data);
     },
 };
 
-// Application Service
+// ======================== APPLICATION ========================
 export const applicationService = {
-    create: async (data: ApplicationRequestDto): Promise<ApplicationResponseDto> => {
-        const response = await apiClient.post<ApplicationResponseDto>("/api/applications", data);
-        return response.data;
-    },
-
-    getById: async (id: number): Promise<ApplicationResponseDto> => {
-        const response = await apiClient.get<ApplicationResponseDto>(`/api/applications/${id}`);
-        return response.data;
-    },
-
-    getByVacancy: async (vacancyId: number): Promise<ApplicationResponseDto[]> => {
-        const response = await apiClient.get<ApplicationResponseDto[]>(
-            `/api/applications/vacancy/${vacancyId}`
-        );
-        return response.data;
-    },
-
-    getByCandidate: async (candidateId: number): Promise<ApplicationResponseDto[]> => {
-        const response = await apiClient.get<ApplicationResponseDto[]>(
-            `/api/applications/candidate/${candidateId}`
-        );
-        return response.data;
-    },
-
-    reject: async (data: ApplicationRequestDto): Promise<ApplicationResponseDto> => {
-        const response = await apiClient.post<ApplicationResponseDto>(
-            "/api/applications/reject",
-            data
-        );
-        return response.data;
-    },
-
-    withdraw: async (data: ApplicationRequestDto): Promise<ApplicationResponseDto> => {
-        const response = await apiClient.post<ApplicationResponseDto>(
-            "/api/applications/withdrawn",
-            data
-        );
-        return response.data;
-    },
-
-    getByStatus: async (status: string): Promise<ApplicationResponseDto[]> => {
-        const response = await apiClient.get<ApplicationResponseDto[]>(
-            `/api/applications/status/${status}`
-        );
-        return response.data;
-    },
-
-    getByEmployer: async (employerId: number): Promise<ApplicationResponseDto[]> => {
-        const response = await apiClient.get<ApplicationResponseDto[]>(
-            `/api/applications/employer/${employerId}`
-        );
-        return response.data;
-    },
-
-    getStatistics: async (): Promise<ApplicationStatisticsDto> => {
-        const response = await apiClient.get<ApplicationStatisticsDto>("/api/applications/statistics");
-        return response.data;
-    },
-
-    getEmployerStatistics: async (employerId: number): Promise<ApplicationStatisticsDto> => {
-        const response = await apiClient.get<ApplicationStatisticsDto>(
-            `/api/applications/employer/${employerId}/statistics`
-        );
-        return response.data;
-    },
+    create: (data: ApplicationRequestDto) =>
+        api.post<ApplicationResponseDto>('/api/applications', data).then(r => r.data),
+    getById: (id: number) =>
+        api.get<ApplicationResponseDto>(`/api/applications/${id}`).then(r => r.data),
+    getMy: () =>
+        api.get<ApplicationResponseDto[]>('/api/applications/my').then(r => r.data),
+    getByVacancy: (vacancyId: number) =>
+        api.get<ApplicationResponseDto[]>(`/api/applications/vacancy/${vacancyId}`).then(r => r.data),
+    getByEmployer: (employerId: number) =>
+        api.get<ApplicationResponseDto[]>(`/api/applications/employer/${employerId}`).then(r => r.data),
+    accept: (id: number) => api.patch(`/api/applications/${id}/accept`),
+    reject: (id: number) => api.patch(`/api/applications/${id}/reject`),
+    withdraw: (id: number) => api.patch(`/api/applications/${id}/withdraw`),
+    getStatistics: (employerId: number): Promise<ApplicationStatisticsDto> =>
+        api.get<ApplicationStatisticsDto>(`/api/applications/statistics/${employerId}`).then(r => r.data),
 };
+
+// ======================== SEARCH (Elasticsearch) ========================
+export const searchService = {
+    searchVacancies: (params: VacancySearchRequest): Promise<SearchPageResponse<VacancySearchResponse>> =>
+        api.get('/api/search/vacancies', { params }).then(r => r.data),
+    searchResumes: (params: ResumeSearchRequest): Promise<SearchPageResponse<ResumeSearchResponse>> =>
+        api.get('/api/search/resumes', { params }).then(r => r.data),
+};
+
+export default api;

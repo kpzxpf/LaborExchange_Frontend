@@ -26,32 +26,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
+    const updateAuthState = () => {
+        const authenticated = tokenService.isAuthenticated();
+        setIsAuthenticated(authenticated);
+        if (authenticated) {
+            setUserId(tokenService.getUserId());
+            setUserRole(tokenService.getUserRole());
+        } else {
+            setUserId(null);
+            setUserRole(null);
+        }
+    };
+
     useEffect(() => {
-        const checkAuth = () => {
-            const authenticated = tokenService.isAuthenticated();
-            setIsAuthenticated(authenticated);
-
-            if (authenticated) {
-                setUserId(tokenService.getUserId());
-                setUserRole(tokenService.getUserRole());
-            }
-
-            setLoading(false);
-        };
-
-        checkAuth();
+        updateAuthState();
+        setLoading(false);
     }, []);
 
     const login = async (data: LoginRequest) => {
         try {
             const response = await authService.login(data);
             tokenService.setToken(response.token);
+            updateAuthState();
 
-            setIsAuthenticated(true);
-            setUserId(tokenService.getUserId());
-            setUserRole(tokenService.getUserRole());
-
-            toast.success("Successfully logged in!");
+            toast.success("Вход выполнен успешно!");
 
             const role = tokenService.getUserRole();
             if (role === "EMPLOYER") {
@@ -60,7 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 router.push("/jobseeker/dashboard");
             }
         } catch (error) {
-            toast.error("Login failed. Please check your credentials.");
+            toast.error("Ошибка входа. Проверьте данные.");
             throw error;
         }
     };
@@ -69,12 +67,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             const response = await authService.register(data);
             tokenService.setToken(response.token);
+            updateAuthState();
 
-            setIsAuthenticated(true);
-            setUserId(tokenService.getUserId());
-            setUserRole(tokenService.getUserRole());
-
-            toast.success("Successfully registered!");
+            toast.success("Регистрация завершена!");
 
             if (data.userRole === "EMPLOYER") {
                 router.push("/employer/dashboard");
@@ -82,23 +77,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 router.push("/jobseeker/dashboard");
             }
         } catch (error) {
-            toast.error("Registration failed. Please try again.");
+            toast.error("Ошибка регистрации.");
             throw error;
         }
     };
 
     const logout = () => {
         tokenService.removeToken();
-        setIsAuthenticated(false);
-        setUserId(null);
-        setUserRole(null);
-        toast.success("Logged out successfully");
+        updateAuthState();
+        toast.success("Выход выполнен");
         router.push("/");
     };
 
     return (
         <AuthContext.Provider
-            value={{ isAuthenticated, userId, userRole, login, register, logout, loading }}
+            value={{
+                isAuthenticated,
+                userId,
+                userRole,
+                login,
+                register,
+                logout,
+                loading
+            }}
         >
             {children}
         </AuthContext.Provider>
