@@ -16,7 +16,7 @@ const EXPERIENCE_OPTIONS = [
 ];
 
 export default function VacancySearchPage() {
-    const { user } = useAuth();
+    const { userId } = useAuth();
     const [query, setQuery] = useState('');
     const [location, setLocation] = useState('');
     const [salaryMin, setSalaryMin] = useState('');

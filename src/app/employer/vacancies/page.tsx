@@ -34,7 +34,6 @@ export default function EmployerVacanciesPage() {
 
         setIsLoading(true);
         try {
-            // ✅ ИСПРАВЛЕНО: Получаем только вакансии текущего работодателя
             const response = await vacancyService.getByEmployer(userId, 0, 100);
             setVacancies(response.content);
         } catch (error) {

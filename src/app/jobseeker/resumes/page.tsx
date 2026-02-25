@@ -36,7 +36,7 @@ export default function ResumesListPage() {
 
         setIsLoading(true);
         try {
-            const data = await resumeService.getByUser(userId);
+            const data = await resumeService.getMy();
             setResumes(data || []);
         } catch (error) {
             console.error("Resumes error:", error);

@@ -43,7 +43,7 @@ export default function VacancyDetailPage() {
             setVacancy(vacancyData);
 
             if (userRole === "JOB_SEEKER" && userId) {
-                const resumesData = await resumeService.getByUser(userId);
+                const resumesData = await resumeService.getMy();
                 setResumes(resumesData);
                 if (resumesData.length > 0) {
                     setSelectedResumeId(resumesData[0].id);

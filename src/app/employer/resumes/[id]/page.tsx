@@ -44,7 +44,7 @@ export default function EmployerResumeViewPage() {
             const [resumeData, educationData, skillsData] = await Promise.all([
                 resumeService.getById(resumeId),
                 educationService.getByResume(resumeId),
-                skillService.getByResume(resumeId),
+                skillService.getSkillsForResume(resumeId),
             ]);
 
             setResume(resumeData);

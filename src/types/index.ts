@@ -43,8 +43,12 @@ export interface VacancyDto {
     description: string;
     companyName: string;
     employerId: number;
-    salary?: number;
+    salary?: number | null;
     isPublished: boolean;
+    location?: string;
+    employmentType?: string;
+    experienceLevel?: string;
+    createdAt?: string;
 }
 
 // ======================== COMPANY ========================
@@ -75,10 +79,13 @@ export interface EducationDto {
     id?: number;
     institution: string;
     degree: string;
-    fieldOfStudy: string;
-    startYear: number;
+    fieldOfStudy?: string;
+    startYear?: number;
     endYear?: number;
-    resumeId: number;
+    startDate?: string;
+    endDate?: string;
+    description?: string;
+    resumeId?: number;
 }
 
 // ======================== SKILL ========================

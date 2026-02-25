@@ -75,7 +75,7 @@ export default function EditResumePage() {
             const [resumeData, educationData, skillsData] = await Promise.all([
                 resumeService.getById(resumeId),
                 educationService.getByResume(resumeId),
-                skillService.getByResume(resumeId),
+                skillService.getSkillsForResume(resumeId),
             ]);
 
             setValue("title", resumeData.title);
@@ -86,7 +86,7 @@ export default function EditResumePage() {
             setValue("isPublished", resumeData.isPublished || false);
 
             if (educationData.length > 0) {
-                setValue("education", educationData.map(edu => ({
+                setValue("education", educationData.map((edu: EducationDto) => ({
                     institution: edu.institution,
                     degree: edu.degree,
                     fieldOfStudy: edu.fieldOfStudy,
@@ -96,7 +96,7 @@ export default function EditResumePage() {
             }
 
             if (skillsData.length > 0) {
-                setValue("skills", skillsData.map(skill => ({ name: skill.name })));
+                setValue("skills", skillsData.map((skill: SkillDto) => ({ name: skill.name })));
             }
         } catch (error) {
             toast.error("Не удалось загрузить резюме");
@@ -122,7 +122,7 @@ export default function EditResumePage() {
                 isPublished: data.isPublished,
             };
 
-            await resumeService.update(resumePayload);
+            await resumeService.update(Number(params.id), resumePayload);
 
             toast.success("Резюме успешно обновлено!");
             router.push("/jobseeker/resumes");

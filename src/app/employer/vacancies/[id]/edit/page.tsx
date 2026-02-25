@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
     Briefcase,
@@ -13,16 +13,20 @@ import {
     ArrowLeft,
     Save,
     Loader2,
+    Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { vacancyService } from "@/services/api";
 import { SkillSelector } from "@/components/ui/SkillSelector";
-import { useAuth } from "@/contexts/AuthContext";
 
-export default function CreateVacancyPage() {
+export default function EditVacancyPage() {
     const router = useRouter();
-    const { userId } = useAuth();
-    const [isLoading, setIsLoading] = useState(false);
+    const params = useParams();
+    const vacancyId = Number(params.id);
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
 
     const [formData, setFormData] = useState({
@@ -34,6 +38,37 @@ export default function CreateVacancyPage() {
         employmentType: "FULL_TIME",
         experienceLevel: "JUNIOR",
     });
+
+    useEffect(() => {
+        loadVacancy();
+    }, [vacancyId]);
+
+    const loadVacancy = async () => {
+        try {
+            setIsLoading(true);
+            const vacancy = await vacancyService.getById(vacancyId);
+
+            setFormData({
+                title: vacancy.title,
+                description: vacancy.description || "",
+                salary: vacancy.salary?.toString() || "",
+                location: vacancy.location || "",
+                companyName: vacancy.companyName || "",
+                employmentType: vacancy.employmentType || "FULL_TIME",
+                experienceLevel: vacancy.experienceLevel || "JUNIOR",
+            });
+
+            // Load current skills
+            const skillIds = await vacancyService.getSkillIds(vacancyId);
+            setSelectedSkills(skillIds);
+        } catch (error) {
+            console.error("Failed to load vacancy:", error);
+            alert("Не удалось загрузить вакансию");
+            router.back();
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleChange = (
         e: React.ChangeEvent<
@@ -47,16 +82,11 @@ export default function CreateVacancyPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!userId) {
-            alert("Необходимо войти в систему");
-            return;
-        }
-
         try {
-            setIsLoading(true);
+            setIsSaving(true);
 
-            // 1. Create vacancy
-            const vacancy = await vacancyService.create({
+            // 1. Update vacancy
+            await vacancyService.update(vacancyId, {
                 title: formData.title,
                 description: formData.description,
                 salary: formData.salary ? parseFloat(formData.salary) : null,
@@ -64,25 +94,61 @@ export default function CreateVacancyPage() {
                 companyName: formData.companyName,
                 employmentType: formData.employmentType,
                 experienceLevel: formData.experienceLevel,
-                employerId: userId,
-                isPublished: false,
             });
 
-            // 2. Add skills
-            for (const skillId of selectedSkills) {
-                await vacancyService.addSkill(vacancy.id, skillId);
-            }
+            // 2. Update skills (use bulk update)
+            await vacancyService.setSkills(vacancyId, selectedSkills);
 
             // Success animation and redirect
             await new Promise((resolve) => setTimeout(resolve, 500));
-            router.push("/employer/vacancies");
+            router.push(`/employer/vacancies/${vacancyId}`);
         } catch (error) {
-            console.error("Failed to create vacancy:", error);
-            alert("Не удалось создать вакансию. Попробуйте снова.");
+            console.error("Failed to update vacancy:", error);
+            alert("Не удалось обновить вакансию. Попробуйте снова.");
         } finally {
-            setIsLoading(false);
+            setIsSaving(false);
         }
     };
+
+    const handleDelete = async () => {
+        if (!confirm("Вы уверены, что хотите удалить эту вакансию?")) {
+            return;
+        }
+
+        try {
+            setIsDeleting(true);
+            await vacancyService.delete(vacancyId);
+            router.push("/employer/vacancies");
+        } catch (error) {
+            console.error("Failed to delete vacancy:", error);
+            alert("Не удалось удалить вакансию");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center"
+                >
+                    <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="inline-block mb-4"
+                    >
+                        <Loader2 className="w-12 h-12 text-indigo-600" />
+                    </motion.div>
+                    <p className="text-gray-600 dark:text-gray-400">
+                        Загрузка вакансии...
+                    </p>
+                </motion.div>
+            </div>
+        );
+    }
 
     const isFormValid =
         formData.title.trim() &&
@@ -113,11 +179,24 @@ export default function CreateVacancyPage() {
                         <div className="flex items-center gap-2">
                             <Briefcase className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                Новая вакансия
+                                Редактировать вакансию
                             </h1>
                         </div>
 
-                        <div className="w-24" /> {/* Spacer for centering */}
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
+                        >
+                            {isDeleting ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Trash2 className="w-4 h-4" />
+                            )}
+                            <span className="hidden sm:inline">Удалить</span>
+                        </motion.button>
                     </div>
                 </div>
             </motion.div>
@@ -358,26 +437,26 @@ export default function CreateVacancyPage() {
 
                         <motion.button
                             type="submit"
-                            disabled={!isFormValid || isLoading}
+                            disabled={!isFormValid || isSaving}
                             whileHover={isFormValid ? { scale: 1.02 } : {}}
                             whileTap={isFormValid ? { scale: 0.98 } : {}}
                             className={cn(
                                 "px-8 py-3 rounded-xl font-medium flex items-center gap-2",
                                 "transition-all duration-200",
-                                isFormValid && !isLoading
+                                isFormValid && !isSaving
                                     ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
                                     : "bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
                             )}
                         >
-                            {isLoading ? (
+                            {isSaving ? (
                                 <>
                                     <Loader2 className="w-5 h-5 animate-spin" />
-                                    Создание...
+                                    Сохранение...
                                 </>
                             ) : (
                                 <>
                                     <Save className="w-5 h-5" />
-                                    Создать вакансию
+                                    Сохранить изменения
                                 </>
                             )}
                         </motion.button>
