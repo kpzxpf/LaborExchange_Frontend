@@ -4,14 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Briefcase, User, LogOut } from "lucide-react";
+import { Menu, X, Briefcase, User, LogOut, Sun, Moon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { isAuthenticated, userRole, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const pathname = usePathname();
 
     const isActive = (path: string) => pathname === path;
@@ -19,7 +21,7 @@ const Header = () => {
     const employerLinks = [
         { href: "/employer/dashboard", label: "Панель управления" },
         { href: "/employer/vacancies", label: "Мои вакансии" },
-        { href: "/employer/companies", label: "Компании" },
+        { href: "/employer/resumes", label: "Поиск кандидатов" },
         { href: "/employer/applications", label: "Отклики" },
     ];
 
@@ -33,7 +35,7 @@ const Header = () => {
     const links = userRole === "EMPLOYER" ? employerLinks : jobSeekerLinks;
 
     return (
-        <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm backdrop-blur-sm bg-white/95">
+        <header className="sticky top-0 z-50 bg-background/95 border-b border-border shadow-sm backdrop-blur-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
@@ -45,9 +47,9 @@ const Header = () => {
                         >
                             <Briefcase className="h-6 w-6 text-white" />
                         </motion.div>
-                        <span className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Labor</span>Exchange
-            </span>
+                        <span className="text-xl font-bold text-foreground group-hover:text-blue-600 transition-colors">
+                            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Labor</span>Exchange
+                        </span>
                     </Link>
 
                     {/* Desktop Navigation */}
@@ -61,8 +63,8 @@ const Header = () => {
                                         className={cn(
                                             "px-4 py-2 rounded-lg text-sm font-medium transition-all",
                                             isActive(link.href)
-                                                ? "bg-blue-100 text-blue-700 shadow-sm"
-                                                : "text-gray-700 hover:bg-gray-100"
+                                                ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 shadow-sm"
+                                                : "text-foreground/70 hover:bg-accent hover:text-foreground"
                                         )}
                                     >
                                         {link.label}
@@ -73,17 +75,25 @@ const Header = () => {
                     )}
 
                     {/* Desktop Actions */}
-                    <div className="hidden md:flex items-center space-x-4">
+                    <div className="hidden md:flex items-center space-x-2">
+                        {/* Theme toggle */}
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-accent transition-all"
+                            aria-label="Переключить тему"
+                        >
+                            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                        </button>
+
                         {isAuthenticated ? (
                             <>
-                                {/* ✅ ИСПРАВЛЕНО: Правильный URL без подчеркивания */}
                                 <Link href={userRole === "EMPLOYER" ? "/employer/profile" : "/jobseeker/profile"}>
-                                    <Button variant="ghost" size="sm" className="hover:bg-gray-100">
+                                    <Button variant="ghost" size="sm" className="hover:bg-accent">
                                         <User className="h-4 w-4 mr-2" />
                                         Профиль
                                     </Button>
                                 </Link>
-                                <Button variant="outline" size="sm" onClick={logout} className="hover:bg-red-50 hover:text-red-600 hover:border-red-600 transition-all">
+                                <Button variant="outline" size="sm" onClick={logout} className="hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 hover:border-red-600 transition-all">
                                     <LogOut className="h-4 w-4 mr-2" />
                                     Выход
                                 </Button>
@@ -91,7 +101,7 @@ const Header = () => {
                         ) : (
                             <>
                                 <Link href="/auth/login">
-                                    <Button variant="ghost" size="sm" className="hover:bg-gray-100">
+                                    <Button variant="ghost" size="sm" className="hover:bg-accent">
                                         Вход
                                     </Button>
                                 </Link>
@@ -104,17 +114,26 @@ const Header = () => {
                         )}
                     </div>
 
-                    {/* Mobile menu button */}
-                    <button
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                        {isMenuOpen ? (
-                            <X className="h-6 w-6 text-gray-700" />
-                        ) : (
-                            <Menu className="h-6 w-6 text-gray-700" />
-                        )}
-                    </button>
+                    {/* Mobile: theme toggle + menu button */}
+                    <div className="md:hidden flex items-center gap-1">
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-accent transition-all"
+                            aria-label="Переключить тему"
+                        >
+                            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                        </button>
+                        <button
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="p-2 rounded-lg hover:bg-accent transition-colors"
+                        >
+                            {isMenuOpen ? (
+                                <X className="h-6 w-6 text-foreground" />
+                            ) : (
+                                <Menu className="h-6 w-6 text-foreground" />
+                            )}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -125,7 +144,7 @@ const Header = () => {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden border-t border-gray-200 bg-white shadow-lg"
+                        className="md:hidden border-t border-border bg-background shadow-lg"
                     >
                         <div className="px-4 py-4 space-y-2">
                             {isAuthenticated ? (
@@ -136,8 +155,8 @@ const Header = () => {
                                                 className={cn(
                                                     "block px-4 py-3 rounded-lg text-sm font-medium transition-all",
                                                     isActive(link.href)
-                                                        ? "bg-blue-100 text-blue-700 shadow-sm"
-                                                        : "text-gray-700 hover:bg-gray-100"
+                                                        ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+                                                        : "text-foreground/70 hover:bg-accent hover:text-foreground"
                                                 )}
                                                 onClick={() => setIsMenuOpen(false)}
                                             >
@@ -146,7 +165,7 @@ const Header = () => {
                                         </Link>
                                     ))}
                                     <Link href={userRole === "EMPLOYER" ? "/employer/profile" : "/jobseeker/profile"}>
-                                        <Button variant="ghost" size="sm" className="hover:bg-gray-100">
+                                        <Button variant="ghost" size="sm" className="hover:bg-accent w-full justify-start">
                                             <User className="h-4 w-4 mr-2" />
                                             Профиль
                                         </Button>
@@ -156,7 +175,7 @@ const Header = () => {
                                             logout();
                                             setIsMenuOpen(false);
                                         }}
-                                        className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+                                        className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
                                     >
                                         Выход
                                     </button>
@@ -165,7 +184,7 @@ const Header = () => {
                                 <>
                                     <Link href="/auth/login">
                                         <div
-                                            className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all"
+                                            className="block px-4 py-3 rounded-lg text-sm font-medium text-foreground/70 hover:bg-accent hover:text-foreground transition-all"
                                             onClick={() => setIsMenuOpen(false)}
                                         >
                                             Вход

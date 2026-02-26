@@ -8,10 +8,11 @@ import { ResumeDto, ApplicationResponseDto } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
+    NEW:       { label: 'На рассмотрении', color: 'text-amber-400' },
     PENDING:   { label: 'На рассмотрении', color: 'text-amber-400' },
     ACCEPTED:  { label: 'Принято ✓',        color: 'text-emerald-400' },
     REJECTED:  { label: 'Отклонено',        color: 'text-red-400' },
-    WITHDRAWN: { label: 'Отозвано',         color: 'text-white/35' },
+    WITHDRAWN: { label: 'Отозвано',         color: 'text-foreground/35' },
 };
 
 export default function JobseekerDashboard() {
@@ -60,10 +61,10 @@ export default function JobseekerDashboard() {
 
     if (loading || authLoading) {
         return (
-            <div className="min-h-screen bg-[#09090f] flex items-center justify-center">
+            <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="space-y-3 w-full max-w-3xl px-6">
                     {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-20 bg-white/3 rounded-2xl animate-pulse" />
+                        <div key={i} className="h-20 bg-foreground/[0.03] rounded-2xl animate-pulse" />
                     ))}
                 </div>
             </div>
@@ -71,7 +72,7 @@ export default function JobseekerDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-[#09090f] text-white" style={{ fontFamily: "'Nunito', sans-serif" }}>
+        <div className="min-h-screen bg-background text-foreground" style={{ fontFamily: "'Nunito', sans-serif" }}>
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=Nunito+Sans:wght@400;600&display=swap');`}</style>
 
             <div className="fixed inset-0 pointer-events-none">
@@ -82,7 +83,7 @@ export default function JobseekerDashboard() {
                 {/* Header */}
                 <motion.div initial={{ opacity: 0, y: -15 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
                     <h1 className="text-2xl font-bold">Добро пожаловать 👋</h1>
-                    <p className="text-white/40 text-sm mt-1">
+                    <p className="text-foreground/40 text-sm mt-1">
                         {applications.length} откликов · {resumes.filter(r => r.isPublished).length} активных резюме
                     </p>
                 </motion.div>
@@ -92,22 +93,22 @@ export default function JobseekerDashboard() {
                     <Link href="/search/vacancies"
                           className="p-4 bg-indigo-600/15 border border-indigo-500/25 rounded-2xl hover:bg-indigo-600/25 transition-colors group">
                         <span className="text-2xl block mb-2">⚡</span>
-                        <p className="font-semibold text-indigo-300 group-hover:text-indigo-200">Поиск вакансий</p>
-                        <p className="text-xs text-indigo-400/60 mt-0.5">Elasticsearch поиск</p>
+                        <p className="font-semibold text-indigo-500 dark:text-indigo-300 group-hover:text-indigo-400 dark:group-hover:text-indigo-200">Поиск вакансий</p>
+                        <p className="text-xs text-indigo-500/60 dark:text-indigo-400/60 mt-0.5">Умный полнотекстовый поиск</p>
                     </Link>
                     <Link href="/jobseeker/resumes/create"
-                          className="p-4 bg-white/3 border border-white/10 rounded-2xl hover:bg-white/5 transition-colors group">
+                          className="p-4 bg-foreground/[0.03] border border-foreground/10 rounded-2xl hover:bg-foreground/[0.05] transition-colors group">
                         <span className="text-2xl block mb-2">📝</span>
-                        <p className="font-semibold text-white/70 group-hover:text-white">Создать резюме</p>
-                        <p className="text-xs text-white/30 mt-0.5">Новое резюме</p>
+                        <p className="font-semibold text-foreground/70 group-hover:text-foreground">Создать резюме</p>
+                        <p className="text-xs text-foreground/30 mt-0.5">Новое резюме</p>
                     </Link>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-1 p-1 bg-white/5 rounded-xl mb-6">
+                <div className="flex gap-1 p-1 bg-foreground/5 rounded-xl mb-6">
                     {(['resumes', 'applications'] as const).map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
-                                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60'}`}>
+                                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab ? 'bg-foreground/10 text-foreground' : 'text-foreground/40 hover:text-foreground/60'}`}>
                             {tab === 'resumes' ? `Резюме (${resumes.length})` : `Отклики (${applications.length})`}
                         </button>
                     ))}
@@ -118,11 +119,11 @@ export default function JobseekerDashboard() {
                         <motion.div key="resumes" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                     className="space-y-3">
                             {resumes.length === 0 ? (
-                                <div className="text-center py-16 text-white/25">
+                                <div className="text-center py-16 text-foreground/25">
                                     <p className="text-4xl mb-3">📄</p>
                                     <p>Резюме ещё нет</p>
                                     <Link href="/jobseeker/resumes/create"
-                                          className="mt-4 inline-block px-5 py-2 bg-indigo-600/30 border border-indigo-500/30 rounded-xl text-indigo-400 text-sm hover:bg-indigo-600/50 transition-colors">
+                                          className="mt-4 inline-block px-5 py-2 bg-indigo-600/30 border border-indigo-500/30 rounded-xl text-indigo-500 dark:text-indigo-400 text-sm hover:bg-indigo-600/50 transition-colors">
                                         Создать резюме
                                     </Link>
                                 </div>
@@ -131,16 +132,16 @@ export default function JobseekerDashboard() {
                                     <motion.div key={r.id}
                                                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: i * 0.05 }}
-                                                className="flex items-center justify-between p-4 bg-white/3 border border-white/8 hover:border-white/15 rounded-xl transition-colors group">
+                                                className="flex items-center justify-between p-4 bg-foreground/[0.03] border border-foreground/[0.08] hover:border-foreground/[0.15] rounded-xl transition-colors group">
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-2 h-2 rounded-full ${r.isPublished ? 'bg-emerald-400 shadow-emerald-400/50 shadow-sm' : 'bg-white/20'}`} />
+                                            <div className={`w-2 h-2 rounded-full ${r.isPublished ? 'bg-emerald-400 shadow-emerald-400/50 shadow-sm' : 'bg-foreground/20'}`} />
                                             <div>
                                                 <Link href={`/jobseeker/resumes/${r.id}`}
-                                                      className="font-medium text-sm text-white hover:text-indigo-300 transition-colors">
+                                                      className="font-medium text-sm text-foreground hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors">
                                                     {r.title}
                                                 </Link>
                                                 {r.experienceYears !== undefined && (
-                                                    <p className="text-xs text-white/35">{r.experienceYears} лет опыта</p>
+                                                    <p className="text-xs text-foreground/35">{r.experienceYears} лет опыта</p>
                                                 )}
                                             </div>
                                         </div>
@@ -148,11 +149,11 @@ export default function JobseekerDashboard() {
                                             <button onClick={() => handleTogglePublish(r)}
                                                     className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${r.isPublished
                                                         ? 'bg-emerald-500/10 text-emerald-400 hover:bg-red-500/10 hover:text-red-400'
-                                                        : 'bg-white/5 text-white/40 hover:bg-emerald-500/10 hover:text-emerald-400'}`}>
+                                                        : 'bg-foreground/5 text-foreground/40 hover:bg-emerald-500/10 hover:text-emerald-400'}`}>
                                                 {r.isPublished ? 'Снять' : 'Опубликовать'}
                                             </button>
                                             <Link href={`/jobseeker/resumes/${r.id}/edit`}
-                                                  className="text-xs px-3 py-1.5 bg-white/5 text-white/40 hover:text-white/70 rounded-lg transition-colors">
+                                                  className="text-xs px-3 py-1.5 bg-foreground/5 text-foreground/40 hover:text-foreground/70 rounded-lg transition-colors">
                                                 Изменить
                                             </Link>
                                         </div>
@@ -166,35 +167,35 @@ export default function JobseekerDashboard() {
                         <motion.div key="applications" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                     className="space-y-3">
                             {applications.length === 0 ? (
-                                <div className="text-center py-16 text-white/25">
+                                <div className="text-center py-16 text-foreground/25">
                                     <p className="text-4xl mb-3">📭</p>
                                     <p>Откликов ещё нет</p>
                                     <Link href="/search/vacancies"
-                                          className="mt-4 inline-block px-5 py-2 bg-indigo-600/30 border border-indigo-500/30 rounded-xl text-indigo-400 text-sm hover:bg-indigo-600/50 transition-colors">
+                                          className="mt-4 inline-block px-5 py-2 bg-indigo-600/30 border border-indigo-500/30 rounded-xl text-indigo-500 dark:text-indigo-400 text-sm hover:bg-indigo-600/50 transition-colors">
                                         Найти вакансии
                                     </Link>
                                 </div>
                             ) : (
                                 applications.map((app, i) => {
-                                    const status = STATUS_MAP[app.statusName ?? ''] ?? { label: app.statusName ?? '', color: 'text-white/50' };
+                                    const status = STATUS_MAP[app.statusName ?? ''] ?? { label: app.statusName ?? '', color: 'text-foreground/50' };
                                     return (
                                         <motion.div key={app.id}
                                                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                                                     transition={{ delay: i * 0.05 }}
-                                                    className="p-4 bg-white/3 border border-white/8 rounded-xl">
+                                                    className="p-4 bg-foreground/[0.03] border border-foreground/[0.08] rounded-xl">
                                             <div className="flex items-start justify-between">
                                                 <div>
-                                                    <p className="font-medium text-sm text-white">{app.vacancyTitle ?? `Вакансия #${app.vacancyId}`}</p>
-                                                    {app.companyName && <p className="text-xs text-white/40">{app.companyName}</p>}
-                                                    <p className="text-xs text-white/25 mt-1">
+                                                    <p className="font-medium text-sm text-foreground">{app.vacancyTitle ?? `Вакансия #${app.vacancyId}`}</p>
+                                                    {app.companyName && <p className="text-xs text-foreground/40">{app.companyName}</p>}
+                                                    <p className="text-xs text-foreground/25 mt-1">
                                                         {new Date(app.createdAt).toLocaleDateString('ru')}
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <span className={`text-xs font-medium ${status.color}`}>{status.label}</span>
-                                                    {app.statusName === 'PENDING' && (
+                                                    {(app.statusName === 'NEW' || app.statusName === 'PENDING') && (
                                                         <button onClick={() => handleWithdraw(app.id)}
-                                                                className="text-xs px-2.5 py-1 bg-white/5 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                                                                className="text-xs px-2.5 py-1 bg-foreground/5 text-foreground/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                                                             Отозвать
                                                         </button>
                                                     )}

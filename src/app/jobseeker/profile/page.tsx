@@ -66,10 +66,7 @@ export default function JobSeekerProfilePage() {
 
         setIsSaving(true);
         try {
-            await apiClient.post("/api/users/update", {
-                id: userId,
-                ...formData,
-            });
+            await apiClient.put(`/api/users/${userId}`, formData);
             toast.success("Профиль успешно обновлен!");
             setIsEditing(false);
             fetchProfile();
@@ -82,10 +79,10 @@ export default function JobSeekerProfilePage() {
 
     if (loading || isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-gray-950 dark:via-background dark:to-gray-950">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-                    <p className="text-gray-600">Загрузка...</p>
+                    <p className="text-gray-600 dark:text-gray-400">Загрузка...</p>
                 </div>
             </div>
         );
@@ -96,15 +93,15 @@ export default function JobSeekerProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-gray-950 dark:via-background dark:to-gray-950 py-8">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-8"
                 >
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Мой профиль</h1>
-                    <p className="text-gray-600">Управляйте информацией вашего профиля</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Мой профиль</h1>
+                    <p className="text-gray-600 dark:text-gray-400">Управляйте информацией вашего профиля</p>
                 </motion.div>
 
                 <motion.div
@@ -112,8 +109,8 @@ export default function JobSeekerProfilePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                 >
-                    <Card className="shadow-xl bg-white">
-                        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
+                    <Card className="shadow-xl bg-white dark:bg-gray-800">
+                        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-700">
                             <div className="flex items-center justify-between">
                                 <CardTitle className="flex items-center">
                                     <User className="h-6 w-6 mr-3 text-blue-600" />
@@ -124,7 +121,7 @@ export default function JobSeekerProfilePage() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => setIsEditing(true)}
-                                        className="hover:bg-blue-50"
+                                        className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
                                     >
                                         <Edit className="h-4 w-4 mr-2" />
                                         Редактировать
@@ -212,36 +209,36 @@ export default function JobSeekerProfilePage() {
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label className="text-sm font-medium text-gray-600">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
                                                 Имя пользователя
                                             </label>
-                                            <p className="mt-1 text-lg text-gray-900">{profile.username}</p>
+                                            <p className="mt-1 text-lg text-gray-900 dark:text-white">{profile.username}</p>
                                         </div>
 
                                         <div>
-                                            <label className="text-sm font-medium text-gray-600">Роль</label>
-                                            <p className="mt-1 text-lg text-gray-900">
-                                                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Роль</label>
+                                            <p className="mt-1 text-lg text-gray-900 dark:text-white">
+                                                <span className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-sm">
                                                     {profile.roleName}
                                                 </span>
                                             </p>
                                         </div>
 
                                         <div>
-                                            <label className="text-sm font-medium text-gray-600 flex items-center">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                                                 <Mail className="h-4 w-4 mr-2" />
                                                 Email
                                             </label>
-                                            <p className="mt-1 text-lg text-gray-900">{profile.email}</p>
+                                            <p className="mt-1 text-lg text-gray-900 dark:text-white">{profile.email}</p>
                                         </div>
 
                                         {profile.phoneNumber && (
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600 flex items-center">
+                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                                                     <Phone className="h-4 w-4 mr-2" />
                                                     Телефон
                                                 </label>
-                                                <p className="mt-1 text-lg text-gray-900">
+                                                <p className="mt-1 text-lg text-gray-900 dark:text-white">
                                                     {profile.phoneNumber}
                                                 </p>
                                             </div>
@@ -249,8 +246,8 @@ export default function JobSeekerProfilePage() {
 
                                         {profile.firstName && (
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Имя</label>
-                                                <p className="mt-1 text-lg text-gray-900">
+                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Имя</label>
+                                                <p className="mt-1 text-lg text-gray-900 dark:text-white">
                                                     {profile.firstName}
                                                 </p>
                                             </div>
@@ -258,10 +255,10 @@ export default function JobSeekerProfilePage() {
 
                                         {profile.lastName && (
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">
+                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
                                                     Фамилия
                                                 </label>
-                                                <p className="mt-1 text-lg text-gray-900">{profile.lastName}</p>
+                                                <p className="mt-1 text-lg text-gray-900 dark:text-white">{profile.lastName}</p>
                                             </div>
                                         )}
                                     </div>

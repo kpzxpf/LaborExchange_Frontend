@@ -35,7 +35,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-gray-950 dark:via-background dark:to-purple-950/30 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -47,15 +47,15 @@ export default function LoginPage() {
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.2, type: "spring" }}
-                        className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full mb-4 shadow-lg"
+                        className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/40 dark:to-purple-900/40 rounded-full mb-4 shadow-lg"
                     >
-                        <LogIn className="h-10 w-10 text-blue-600" />
+                        <LogIn className="h-10 w-10 text-blue-600 dark:text-blue-400" />
                     </motion.div>
                     <motion.h1
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="text-3xl font-bold text-gray-900 mb-2"
+                        className="text-3xl font-bold text-foreground mb-2"
                     >
                         С возвращением
                     </motion.h1>
@@ -63,7 +63,7 @@ export default function LoginPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="text-gray-600"
+                        className="text-foreground/60"
                     >
                         Войдите, чтобы продолжить работу с аккаунтом
                     </motion.p>
@@ -75,14 +75,14 @@ export default function LoginPage() {
                     transition={{ delay: 0.5 }}
                 >
                     <Card className="shadow-xl">
-                        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
+                        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
                             <CardTitle>Вход в систему</CardTitle>
                             <CardDescription>Введите свои учетные данные для доступа к аккаунту</CardDescription>
                         </CardHeader>
-                        <CardContent className="bg-white">
+                        <CardContent>
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-10 h-5 w-5 text-gray-400" />
+                                    <Mail className="absolute left-3 top-10 h-5 w-5 text-foreground/40" />
                                     <Input
                                         label="Электронная почта"
                                         type="email"
@@ -101,7 +101,7 @@ export default function LoginPage() {
                                 </div>
 
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-10 h-5 w-5 text-gray-400" />
+                                    <Lock className="absolute left-3 top-10 h-5 w-5 text-foreground/40" />
                                     <Input
                                         label="Пароль"
                                         type="password"
@@ -123,18 +123,18 @@ export default function LoginPage() {
                             <div className="mt-6">
                                 <div className="relative">
                                     <div className="absolute inset-0 flex items-center">
-                                        <div className="w-full border-t border-gray-300" />
+                                        <div className="w-full border-t border-border" />
                                     </div>
                                     <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">
-                      Нет аккаунта?
-                    </span>
+                                        <span className="px-2 bg-background text-foreground/50">
+                                            Нет аккаунта?
+                                        </span>
                                     </div>
                                 </div>
 
                                 <div className="mt-6 text-center">
                                     <Link href="/auth/register">
-                                        <Button variant="outline" className="w-full hover:bg-gray-50 transition-colors">
+                                        <Button variant="outline" className="w-full transition-colors">
                                             Создать новый аккаунт
                                         </Button>
                                     </Link>
@@ -148,14 +148,14 @@ export default function LoginPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.6 }}
-                    className="mt-8 text-center text-sm text-gray-600"
+                    className="mt-8 text-center text-sm text-foreground/60"
                 >
                     Входя в систему, вы соглашаетесь с нашими{" "}
-                    <Link href="/terms" className="text-blue-600 hover:text-blue-700 font-medium">
+                    <Link href="/terms" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
                         Условиями использования
                     </Link>{" "}
                     и{" "}
-                    <Link href="/privacy" className="text-blue-600 hover:text-blue-700 font-medium">
+                    <Link href="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
                         Политикой конфиденциальности
                     </Link>
                 </motion.p>

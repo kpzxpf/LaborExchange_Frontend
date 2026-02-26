@@ -11,7 +11,6 @@ import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { resumeService, educationService, skillService } from "@/services/api";
 import type { ResumeDto, EducationDto, SkillDto } from "@/types";
 import toast from "react-hot-toast";
-import { span } from "framer-motion/client";
 
 export default function ViewResumePage() {
     const params = useParams();
@@ -57,8 +56,8 @@ export default function ViewResumePage() {
 
     if (loading || isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
             </div>
         );
     }
@@ -66,7 +65,7 @@ export default function ViewResumePage() {
     if (!resume) return null;
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-background py-8">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -97,39 +96,39 @@ export default function ViewResumePage() {
                 >
                     <Card className="mb-6">
                         <CardContent className="p-8">
-                            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                                 {resume.title}
                             </h1>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                 {resume.contactEmail && (
-                                    <div className="flex items-center text-gray-700">
-                                        <Mail className="h-5 w-5 mr-3 text-primary-600" />
+                                    <div className="flex items-center text-gray-700 dark:text-gray-300">
+                                        <Mail className="h-5 w-5 mr-3 text-blue-600" />
                                         <span>{resume.contactEmail}</span>
                                     </div>
                                 )}
 
                                 {resume.contactPhone && (
-                                    <div className="flex items-center text-gray-700">
-                                        <Phone className="h-5 w-5 mr-3 text-primary-600" />
+                                    <div className="flex items-center text-gray-700 dark:text-gray-300">
+                                        <Phone className="h-5 w-5 mr-3 text-blue-600" />
                                         <span>{resume.contactPhone}</span>
                                     </div>
                                 )}
 
                                 {resume.experienceYears !== undefined && (
-                                    <div className="flex items-center text-gray-700">
-                                        <Calendar className="h-5 w-5 mr-3 text-primary-600" />
+                                    <div className="flex items-center text-gray-700 dark:text-gray-300">
+                                        <Calendar className="h-5 w-5 mr-3 text-blue-600" />
                                         <span>Опыт работы: {resume.experienceYears} лет</span>
                                     </div>
                                 )}
                             </div>
 
                             {resume.summary && (
-                                <div className="pt-6 border-t">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                                <div className="pt-6 border-t dark:border-gray-700">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                                         Профессиональное резюме
                                     </h3>
-                                    <p className="text-gray-700 whitespace-pre-wrap">
+                                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                                         {resume.summary}
                                     </p>
                                 </div>
@@ -148,7 +147,7 @@ export default function ViewResumePage() {
                         <Card>
                             <CardHeader>
                                 <div className="flex items-center">
-                                    <GraduationCap className="h-6 w-6 text-primary-600 mr-3" />
+                                    <GraduationCap className="h-6 w-6 text-blue-600 mr-3" />
                                     <CardTitle>Образование</CardTitle>
                                 </div>
                             </CardHeader>
@@ -159,16 +158,16 @@ export default function ViewResumePage() {
                                             key={edu.id || index}
                                             className={index !== 0 ? "pt-6 border-t" : ""}
                                         >
-                                            <h4 className="text-lg font-semibold text-gray-900">
+                                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                                                 {edu.degree}
                                             </h4>
-                                            <p className="text-primary-600 font-medium mt-1">
+                                            <p className="text-blue-600 font-medium mt-1">
                                                 {edu.institution}
                                             </p>
-                                            <p className="text-gray-600 mt-1">
+                                            <p className="text-gray-600 dark:text-gray-400 mt-1">
                                                 {edu.fieldOfStudy}
                                             </p>
-                                            <p className="text-sm text-gray-500 mt-2">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                                                 {edu.startYear} — {edu.endYear || "По настоящее время"}
                                             </p>
                                         </div>
@@ -188,7 +187,7 @@ export default function ViewResumePage() {
                         <Card>
                             <CardHeader>
                                 <div className="flex items-center">
-                                    <Award className="h-6 w-6 text-primary-600 mr-3" />
+                                    <Award className="h-6 w-6 text-blue-600 mr-3" />
                                     <CardTitle>Навыки</CardTitle>
                                 </div>
                             </CardHeader>
@@ -197,7 +196,7 @@ export default function ViewResumePage() {
                                     {skills.map((skill) => (
                                         <span
                                             key={skill.id}
-                                            className="px-4 py-2 bg-primary-100 text-primary-700 rounded-full text-sm font-medium"
+                                            className="px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium"
                                         >
                                             {skill.name}
                                         </span>

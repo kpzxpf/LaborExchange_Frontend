@@ -17,10 +17,15 @@ import {
     Loader2,
     Sparkles,
     Share2,
+    Mail,
+    Phone,
+    Globe,
+    ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { vacancyService, skillService } from "@/services/api";
+import { vacancyService, skillService, companyService } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
+import type { CompanyDto } from "@/types";
 
 interface Vacancy {
     id: number;
@@ -48,6 +53,7 @@ export default function VacancyDetailPage() {
 
     const [vacancy, setVacancy] = useState<Vacancy | null>(null);
     const [skills, setSkills] = useState<Skill[]>([]);
+    const [company, setCompany] = useState<CompanyDto | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -63,16 +69,20 @@ export default function VacancyDetailPage() {
             const vacancyData = await vacancyService.getById(vacancyId);
             setVacancy(vacancyData);
 
-            // Load skills
+            // Load skills and company in parallel
             const skillIds = await vacancyService.getSkillIds(vacancyId);
+            const [skillNames, companyData] = await Promise.all([
+                skillIds.length > 0 ? skillService.getNamesByIds(skillIds) : Promise.resolve([]),
+                companyService.getByEmployerId(vacancyData.employerId).catch(() => null),
+            ]);
             if (skillIds.length > 0) {
-                const skillNames = await skillService.getNamesByIds(skillIds);
                 const skillsData = skillIds.map((id: number, index: number) => ({
                     id,
                     name: skillNames[index],
                 }));
                 setSkills(skillsData);
             }
+            setCompany(companyData);
         } catch (error) {
             console.error("Failed to load vacancy:", error);
             alert("Не удалось загрузить вакансию");
@@ -300,6 +310,64 @@ export default function VacancyDetailPage() {
                                                 {skill.name}
                                             </motion.div>
                                         ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Company */}
+                        <AnimatePresence>
+                            {company && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ delay: 0.25 }}
+                                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8"
+                                >
+                                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                        <Building2 className="w-5 h-5 text-indigo-600" />
+                                        О компании
+                                    </h2>
+                                    <p className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{company.name}</p>
+                                    {company.description && (
+                                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed mb-4">
+                                            {company.description}
+                                        </p>
+                                    )}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {company.location && (
+                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                                <MapPin className="w-4 h-4 text-indigo-500 shrink-0" />
+                                                <span>{company.location}</span>
+                                            </div>
+                                        )}
+                                        {company.email && (
+                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                                <Mail className="w-4 h-4 text-indigo-500 shrink-0" />
+                                                <span>{company.email}</span>
+                                            </div>
+                                        )}
+                                        {company.phoneNumber && (
+                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                                <Phone className="w-4 h-4 text-indigo-500 shrink-0" />
+                                                <span>{company.phoneNumber}</span>
+                                            </div>
+                                        )}
+                                        {company.website && (
+                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                                <Globe className="w-4 h-4 text-indigo-500 shrink-0" />
+                                                <a
+                                                    href={company.website}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-indigo-600 hover:underline flex items-center gap-1"
+                                                >
+                                                    {company.website}
+                                                    <ExternalLink className="w-3 h-3" />
+                                                </a>
+                                            </div>
+                                        )}
                                     </div>
                                 </motion.div>
                             )}

@@ -58,14 +58,14 @@ export default function EmployerVacanciesPage() {
 
     if (loading || isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-background py-8 dark:text-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <motion.div
@@ -74,10 +74,10 @@ export default function EmployerVacanciesPage() {
                     className="mb-8 flex items-center justify-between"
                 >
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                             Мои вакансии
                         </h1>
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500">
                             Управление объявлениями о вакансиях
                         </p>
                     </div>
@@ -103,11 +103,11 @@ export default function EmployerVacanciesPage() {
                                     <CardContent className="p-6">
                                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                             <div className="flex-1">
-                                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                                                     {vacancy.title}
                                                 </h3>
 
-                                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
+                                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 mb-3">
                                                     <div className="flex items-center">
                                                         <Briefcase className="h-4 w-4 mr-1" />
                                                         {vacancy.companyName}
@@ -121,7 +121,7 @@ export default function EmployerVacanciesPage() {
                                                     )}
                                                 </div>
 
-                                                <p className="text-gray-700 line-clamp-2">
+                                                <p className="text-gray-700 dark:text-gray-300 line-clamp-2">
                                                     {vacancy.description}
                                                 </p>
                                             </div>
@@ -154,11 +154,11 @@ export default function EmployerVacanciesPage() {
                     >
                         <Card>
                             <CardContent className="p-12 text-center">
-                                <Briefcase className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                <Briefcase className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                                     Вакансий пока нет
                                 </h3>
-                                <p className="text-gray-600 mb-6">
+                                <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 mb-6">
                                     Создайте первое объявление о вакансии, чтобы начать набор персонала
                                 </p>
                                 <Link href="/employer/vacancies/create">

@@ -70,7 +70,7 @@ export default function RegisterPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-gray-950 dark:via-background dark:to-purple-950/30 py-12 px-4 sm:px-6 lg:px-8">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -82,7 +82,7 @@ export default function RegisterPage() {
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-4xl font-bold text-gray-900 mb-2"
+                        className="text-4xl font-bold text-foreground mb-2"
                     >
                         Присоединяйтесь к <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">LaborExchange</span>
                     </motion.h1>
@@ -90,7 +90,7 @@ export default function RegisterPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="text-gray-600"
+                        className="text-foreground/60"
                     >
                         Создайте аккаунт и начните свой путь
                     </motion.p>
@@ -104,7 +104,7 @@ export default function RegisterPage() {
                         transition={{ delay: 0.4 }}
                         className="mb-8"
                     >
-                        <h2 className="text-2xl font-semibold text-gray-900 text-center mb-6">
+                        <h2 className="text-2xl font-semibold text-foreground text-center mb-6">
                             Что привело вас сюда?
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -118,26 +118,26 @@ export default function RegisterPage() {
                                         hover
                                         className={`cursor-pointer transition-all shadow-md hover:shadow-xl ${
                                             selectedRole === option.value
-                                                ? "ring-2 ring-blue-500 border-blue-500 bg-blue-50"
-                                                : "hover:border-blue-300 bg-white"
+                                                ? "ring-2 ring-blue-500 border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                                                : "hover:border-blue-300 dark:hover:border-blue-600"
                                         }`}
                                         onClick={() => setSelectedRole(option.value)}
                                     >
                                         <CardContent className="p-6">
                                             <div className="flex items-start space-x-4">
-                                                <div className="bg-gradient-to-br from-blue-100 to-purple-100 p-3 rounded-lg shadow-md">
-                                                    <option.icon className="h-8 w-8 text-blue-600" />
+                                                <div className="bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/40 dark:to-purple-900/40 p-3 rounded-lg shadow-md">
+                                                    <option.icon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                                                    <h3 className="text-xl font-semibold text-foreground mb-1">
                                                         {option.title}
                                                     </h3>
-                                                    <p className="text-gray-600 text-sm mb-4">
+                                                    <p className="text-foreground/60 text-sm mb-4">
                                                         {option.description}
                                                     </p>
                                                     <ul className="space-y-2">
                                                         {option.features.map((feature, index) => (
-                                                            <li key={index} className="flex items-center text-sm text-gray-700">
+                                                            <li key={index} className="flex items-center text-sm text-foreground/70">
                                                                 <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                                                                 {feature}
                                                             </li>
@@ -161,15 +161,15 @@ export default function RegisterPage() {
                         transition={{ duration: 0.5 }}
                     >
                         <Card className="shadow-xl">
-                            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
+                            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle>Завершите регистрацию</CardTitle>
                                         <CardDescription>
                                             Регистрируетесь как:{" "}
-                                            <span className="font-semibold text-blue-600">
-                        {roleOptions.find((r) => r.value === selectedRole)?.title}
-                      </span>
+                                            <span className="font-semibold text-blue-600 dark:text-blue-400">
+                                                {roleOptions.find((r) => r.value === selectedRole)?.title}
+                                            </span>
                                         </CardDescription>
                                     </div>
                                     <Button
@@ -181,7 +181,7 @@ export default function RegisterPage() {
                                     </Button>
                                 </div>
                             </CardHeader>
-                            <CardContent className="bg-white">
+                            <CardContent>
                                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                     <Input
                                         label="Имя пользователя"
@@ -257,11 +257,11 @@ export default function RegisterPage() {
                                 </form>
 
                                 <div className="mt-6 text-center">
-                                    <p className="text-sm text-gray-600">
+                                    <p className="text-sm text-foreground/60">
                                         Уже есть аккаунт?{" "}
                                         <Link
                                             href="/auth/login"
-                                            className="text-blue-600 hover:text-blue-700 font-medium"
+                                            className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
                                         >
                                             Войти
                                         </Link>

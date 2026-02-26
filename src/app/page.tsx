@@ -42,12 +42,11 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen">
-            {/* Hero Section с улучшенным фоном */}
-            <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden">
-                {/* Декоративные элементы */}
+            {/* Hero Section */}
+            <section className="relative bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-gray-950 dark:via-background dark:to-purple-950/30 overflow-hidden">
                 <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
-                    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
+                    <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 dark:bg-blue-900/30 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl opacity-30 animate-pulse" />
+                    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 dark:bg-purple-900/30 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl opacity-30 animate-pulse" />
                 </div>
 
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
@@ -61,16 +60,16 @@ export default function HomePage() {
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ delay: 0.2, duration: 0.5 }}
-                            className="inline-flex items-center px-4 py-2 mb-6 bg-blue-100 rounded-full"
+                            className="inline-flex items-center px-4 py-2 mb-6 bg-blue-100 dark:bg-blue-900/40 rounded-full"
                         >
                             <Star className="h-4 w-4 text-yellow-500 mr-2" />
-                            <span className="text-sm font-medium text-gray-700">
+                            <span className="text-sm font-medium text-foreground/70">
                                 Надежная платформа для поиска работы
                             </span>
                         </motion.div>
 
                         <motion.h1
-                            className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6"
+                            className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-6"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3, duration: 0.8 }}
@@ -84,7 +83,7 @@ export default function HomePage() {
                         </motion.h1>
 
                         <motion.p
-                            className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto"
+                            className="text-xl text-foreground/60 mb-8 max-w-3xl mx-auto"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4, duration: 0.8 }}
@@ -115,7 +114,7 @@ export default function HomePage() {
             </section>
 
             {/* Stats Section */}
-            <section className="py-16 bg-white border-b">
+            <section className="py-16 bg-background border-b border-border">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                         {stats.map((stat, index) => (
@@ -127,11 +126,11 @@ export default function HomePage() {
                                 transition={{ delay: index * 0.1, duration: 0.5 }}
                                 className="text-center"
                             >
-                                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-3">
-                                    <stat.icon className="h-6 w-6 text-blue-600" />
+                                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-full mb-3">
+                                    <stat.icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                                <div className="text-sm text-gray-600">{stat.label}</div>
+                                <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
+                                <div className="text-sm text-foreground/60">{stat.label}</div>
                             </motion.div>
                         ))}
                     </div>
@@ -139,7 +138,7 @@ export default function HomePage() {
             </section>
 
             {/* Features Section */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-gray-50">
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-muted/30">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -147,10 +146,10 @@ export default function HomePage() {
                     transition={{ duration: 0.8 }}
                     className="text-center mb-16"
                 >
-                    <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                    <h2 className="text-4xl font-bold text-foreground mb-4">
                         Почему выбирают LaborExchange?
                     </h2>
-                    <p className="text-xl text-gray-600">
+                    <p className="text-xl text-foreground/60">
                         Всё необходимое для успеха в вашей карьере
                     </p>
                 </motion.div>
@@ -164,15 +163,15 @@ export default function HomePage() {
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.2, duration: 0.8 }}
                         >
-                            <Card hover className="h-full bg-white shadow-md hover:shadow-xl transition-shadow">
+                            <Card hover className="h-full shadow-md hover:shadow-xl transition-shadow">
                                 <CardContent className="p-8 text-center">
-                                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6">
-                                        <feature.icon className="h-8 w-8 text-blue-600" />
+                                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/40 rounded-full mb-6">
+                                        <feature.icon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                                     </div>
-                                    <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                                    <h3 className="text-xl font-semibold text-foreground mb-3">
                                         {feature.title}
                                     </h3>
-                                    <p className="text-gray-600">{feature.description}</p>
+                                    <p className="text-foreground/60">{feature.description}</p>
                                 </CardContent>
                             </Card>
                         </motion.div>
@@ -181,7 +180,7 @@ export default function HomePage() {
             </section>
 
             {/* Benefits Section */}
-            <section className="bg-white py-20">
+            <section className="bg-background py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <motion.div
@@ -190,10 +189,10 @@ export default function HomePage() {
                             viewport={{ once: true }}
                             transition={{ duration: 0.8 }}
                         >
-                            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                            <h2 className="text-4xl font-bold text-foreground mb-6">
                                 Создано для успеха
                             </h2>
-                            <p className="text-lg text-gray-600 mb-8">
+                            <p className="text-lg text-foreground/60 mb-8">
                                 Наша платформа предоставляет все инструменты, необходимые для успеха в поиске работы или найме сотрудников.
                             </p>
                             <ul className="space-y-4">
@@ -207,7 +206,7 @@ export default function HomePage() {
                                         className="flex items-center space-x-3"
                                     >
                                         <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
-                                        <span className="text-gray-700 font-medium">{benefit}</span>
+                                        <span className="text-foreground/80 font-medium">{benefit}</span>
                                     </motion.li>
                                 ))}
                             </ul>

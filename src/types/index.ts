@@ -54,6 +54,7 @@ export interface VacancyDto {
 // ======================== COMPANY ========================
 export interface CompanyDto {
     id: number;
+    employerId?: number;
     name: string;
     description?: string;
     location: string;

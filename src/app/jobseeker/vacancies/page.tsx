@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { searchService, skillService, applicationService } from '@/services/api';
-import { VacancySearchResponse, VacancySearchRequest, SkillDto, SearchPageResponse } from '@/types';
+import { searchService, applicationService } from '@/services/api';
+import { VacancySearchResponse, VacancySearchRequest, SearchPageResponse } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 
@@ -24,13 +24,12 @@ export default function VacancySearchPage() {
     const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
     const [skillInput, setSkillInput] = useState('');
     const [results, setResults] = useState<VacancySearchResponse[]>([]);
-    const [totalResults, setTotalResults] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(false);
     const [searched, setSearched] = useState(false);
     const [filtersOpen, setFiltersOpen] = useState(false);
-    const debounceRef = useRef<NodeJS.Timeout>();
 
     const doSearch = useCallback(async (params: VacancySearchRequest) => {
         setLoading(true);
@@ -48,8 +47,9 @@ export default function VacancySearchPage() {
         }
     }, []);
 
-     
-    const [totalElements, setTotalElements] = useState(0);
+    useEffect(() => {
+        doSearch({ page: 0, size: 10 });
+    }, [doSearch]);
 
     const handleSearch = (p = 0) => {
         const params: VacancySearchRequest = {
@@ -72,7 +72,7 @@ export default function VacancySearchPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#060810] text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+        <div className="min-h-screen bg-background text-foreground" style={{ fontFamily: "'Outfit', sans-serif" }}>
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');`}</style>
 
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -83,40 +83,40 @@ export default function VacancySearchPage() {
                 {/* Header */}
                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 text-sm">⚡</div>
-                        <span className="text-blue-400 text-sm font-medium tracking-wider uppercase">Поиск вакансий</span>
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-500 dark:text-blue-400 text-sm">⚡</div>
+                        <span className="text-blue-600 dark:text-blue-400 text-sm font-medium tracking-wider uppercase">Поиск вакансий</span>
                     </div>
                     <h1 style={{ fontFamily: "'Space Mono', monospace" }} className="text-4xl font-bold">
-                        Найдите <span className="text-blue-400">работу мечты</span>
+                        Найдите <span className="text-blue-600 dark:text-blue-400">работу мечты</span>
                     </h1>
-                    <p className="text-white/40 mt-2">Powered by Elasticsearch — умный полнотекстовый поиск</p>
+                    <p className="text-foreground/40 mt-2">Умный полнотекстовый поиск по всем вакансиям</p>
                 </motion.div>
 
                 {/* Search bar */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                             className="flex gap-3 mb-4">
                     <div className="flex-1 relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30">🔍</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/30">🔍</span>
                         <input
                             value={query}
                             onChange={e => setQuery(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleSearch(0)}
                             placeholder="Должность, ключевые слова..."
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-4 text-white placeholder-white/30 focus:outline-none focus:border-blue-500/40 focus:bg-white/7 transition-all"
+                            className="w-full bg-foreground/5 border border-foreground/10 rounded-2xl pl-11 pr-4 py-4 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-blue-500/40 focus:bg-foreground/[0.07] transition-all"
                         />
                     </div>
                     <button
                         onClick={() => setFiltersOpen(!filtersOpen)}
-                        className={`px-5 py-4 rounded-2xl border transition-all ${filtersOpen ? 'bg-blue-500/20 border-blue-500/40 text-blue-400' : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20'}`}>
+                        className={`px-5 py-4 rounded-2xl border transition-all ${filtersOpen ? 'bg-blue-500/20 border-blue-500/40 text-blue-500 dark:text-blue-400' : 'bg-foreground/5 border-foreground/10 text-foreground/60 hover:border-foreground/20'}`}>
                         ⚙ Фильтры {selectedSkills.length + (salaryMin ? 1 : 0) + (location ? 1 : 0) > 0 &&
                         <span className="ml-1 px-1.5 py-0.5 bg-blue-500 text-white text-xs rounded-full">
-                {selectedSkills.length + (salaryMin ? 1 : 0) + (location ? 1 : 0)}
-              </span>}
+                            {selectedSkills.length + (salaryMin ? 1 : 0) + (location ? 1 : 0)}
+                        </span>}
                     </button>
                     <button
                         onClick={() => handleSearch(0)}
                         disabled={loading}
-                        className="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-semibold transition-colors disabled:opacity-60">
+                        className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-semibold transition-colors disabled:opacity-60">
                         {loading ? '...' : 'Найти'}
                     </button>
                 </motion.div>
@@ -127,47 +127,47 @@ export default function VacancySearchPage() {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     className="overflow-hidden mb-4">
-                            <div className="p-5 bg-white/3 border border-white/10 rounded-2xl space-y-4">
+                            <div className="p-5 bg-foreground/[0.03] border border-foreground/10 rounded-2xl space-y-4">
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <label className="text-xs text-white/40 mb-1 block">Город</label>
+                                        <label className="text-xs text-foreground/40 mb-1 block">Город</label>
                                         <input value={location} onChange={e => setLocation(e.target.value)}
                                                placeholder="Москва, Санкт-Петербург..."
-                                               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40 transition-colors" />
+                                               className="w-full bg-foreground/5 border border-foreground/10 rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-blue-500/40 transition-colors" />
                                     </div>
                                     <div>
-                                        <label className="text-xs text-white/40 mb-1 block">Зарплата от (₽)</label>
+                                        <label className="text-xs text-foreground/40 mb-1 block">Зарплата от (₽)</label>
                                         <input type="number" value={salaryMin} onChange={e => setSalaryMin(e.target.value)}
                                                placeholder="50 000"
-                                               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40 transition-colors" />
+                                               className="w-full bg-foreground/5 border border-foreground/10 rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-blue-500/40 transition-colors" />
                                     </div>
                                     <div>
-                                        <label className="text-xs text-white/40 mb-1 block">Зарплата до (₽)</label>
+                                        <label className="text-xs text-foreground/40 mb-1 block">Зарплата до (₽)</label>
                                         <input type="number" value={salaryMax} onChange={e => setSalaryMax(e.target.value)}
                                                placeholder="200 000"
-                                               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40 transition-colors" />
+                                               className="w-full bg-foreground/5 border border-foreground/10 rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-blue-500/40 transition-colors" />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-white/40 mb-1 block">Навыки</label>
+                                    <label className="text-xs text-foreground/40 mb-1 block">Навыки</label>
                                     <div className="flex gap-2 mb-2">
                                         <input value={skillInput} onChange={e => setSkillInput(e.target.value)}
                                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkillFilter(); } }}
                                                placeholder="React, Python, Docker..."
-                                               className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40 transition-colors" />
+                                               className="flex-1 bg-foreground/5 border border-foreground/10 rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-blue-500/40 transition-colors" />
                                         <button onClick={addSkillFilter}
-                                                className="px-4 py-2 bg-blue-600/30 border border-blue-500/30 rounded-xl text-blue-400 text-sm hover:bg-blue-600/50 transition-colors">
+                                                className="px-4 py-2 bg-blue-600/30 border border-blue-500/30 rounded-xl text-blue-500 dark:text-blue-400 text-sm hover:bg-blue-600/50 transition-colors">
                                             +
                                         </button>
                                     </div>
                                     {selectedSkills.length > 0 && (
                                         <div className="flex flex-wrap gap-2">
                                             {selectedSkills.map(s => (
-                                                <span key={s} className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/15 border border-blue-500/30 rounded-full text-sm text-blue-300">
-                          {s}
+                                                <span key={s} className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/15 border border-blue-500/30 rounded-full text-sm text-blue-600 dark:text-blue-300">
+                                                    {s}
                                                     <button onClick={() => setSelectedSkills(selectedSkills.filter(x => x !== s))}
                                                             className="text-blue-400/60 hover:text-red-400 transition-colors">×</button>
-                        </span>
+                                                </span>
                                             ))}
                                         </div>
                                     )}
@@ -181,19 +181,19 @@ export default function VacancySearchPage() {
                 {loading && (
                     <div className="flex flex-col gap-3 mt-6">
                         {[...Array(4)].map((_, i) => (
-                            <div key={i} className="h-32 bg-white/3 rounded-2xl animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+                            <div key={i} className="h-32 bg-foreground/[0.03] rounded-2xl animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
                         ))}
                     </div>
                 )}
 
                 {!loading && searched && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2">
-                        <p className="text-white/40 text-sm mb-4">
-                            Найдено <span className="text-white/70 font-medium">{totalElements}</span> вакансий
+                        <p className="text-foreground/40 text-sm mb-4">
+                            Найдено <span className="text-foreground/70 font-medium">{totalElements}</span> вакансий
                         </p>
 
                         {results.length === 0 ? (
-                            <div className="text-center py-20 text-white/30">
+                            <div className="text-center py-20 text-foreground/30">
                                 <p className="text-5xl mb-4">🔭</p>
                                 <p className="text-lg">Ничего не найдено</p>
                                 <p className="text-sm mt-1">Попробуйте изменить запрос или фильтры</p>
@@ -205,39 +205,39 @@ export default function VacancySearchPage() {
                                         <motion.div key={v.id}
                                                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                                                     transition={{ delay: i * 0.05 }}
-                                                    className="group p-5 bg-white/3 border border-white/8 hover:border-blue-500/30 hover:bg-white/5 rounded-2xl transition-all cursor-pointer"
+                                                    className="group p-5 bg-foreground/[0.03] border border-foreground/[0.08] hover:border-blue-500/30 hover:bg-foreground/5 rounded-2xl transition-all cursor-pointer"
                                         >
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-3 mb-1">
-                                                        <h3 className="font-semibold text-white group-hover:text-blue-300 transition-colors truncate">
+                                                        <h3 className="font-semibold text-foreground group-hover:text-blue-500 dark:group-hover:text-blue-300 transition-colors truncate">
                                                             {v.title}
                                                         </h3>
                                                         {v.salary && (
-                                                            <span className="shrink-0 text-sm text-green-400 bg-green-400/10 px-2.5 py-0.5 rounded-full">
-                                {v.salary.toLocaleString()} ₽
-                              </span>
+                                                            <span className="shrink-0 text-sm text-green-600 dark:text-green-400 bg-green-400/10 px-2.5 py-0.5 rounded-full">
+                                                                {v.salary.toLocaleString()} ₽
+                                                            </span>
                                                         )}
                                                     </div>
-                                                    <p className="text-sm text-white/50 mb-1">{v.companyName}{v.location && ` · ${v.location}`}</p>
+                                                    <p className="text-sm text-foreground/50 mb-1">{v.companyName}{v.location && ` · ${v.location}`}</p>
                                                     {v.description && (
-                                                        <p className="text-sm text-white/40 line-clamp-2">{v.description}</p>
+                                                        <p className="text-sm text-foreground/40 line-clamp-2">{v.description}</p>
                                                     )}
                                                     {v.skills && v.skills.length > 0 && (
                                                         <div className="flex flex-wrap gap-1.5 mt-3">
                                                             {v.skills.slice(0, 6).map(s => (
-                                                                <span key={s} className="px-2 py-0.5 bg-white/5 rounded-md text-xs text-white/50">
-                                  {s}
-                                </span>
+                                                                <span key={s} className="px-2 py-0.5 bg-foreground/5 rounded-md text-xs text-foreground/50">
+                                                                    {s}
+                                                                </span>
                                                             ))}
                                                             {v.skills.length > 6 && (
-                                                                <span className="px-2 py-0.5 text-xs text-white/30">+{v.skills.length - 6}</span>
+                                                                <span className="px-2 py-0.5 text-xs text-foreground/30">+{v.skills.length - 6}</span>
                                                             )}
                                                         </div>
                                                     )}
                                                 </div>
                                                 <Link href={`/jobseeker/vacancies/${v.id}`}
-                                                      className="shrink-0 px-4 py-2 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-400 text-sm hover:bg-blue-600/40 transition-colors">
+                                                      className="shrink-0 px-4 py-2 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-600 dark:text-blue-400 text-sm hover:bg-blue-600/40 transition-colors">
                                                     Подробнее →
                                                 </Link>
                                             </div>
@@ -249,14 +249,14 @@ export default function VacancySearchPage() {
                                 {totalPages > 1 && (
                                     <div className="flex items-center justify-center gap-2 pt-6">
                                         <button onClick={() => handleSearch(page - 1)} disabled={page === 0}
-                                                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white/60 disabled:opacity-30 hover:border-white/20 transition-colors">
+                                                className="px-4 py-2 bg-foreground/5 border border-foreground/10 rounded-xl text-sm text-foreground/60 disabled:opacity-30 hover:border-foreground/20 transition-colors">
                                             ← Пред
                                         </button>
-                                        <span className="text-sm text-white/40 px-4">
-                      {page + 1} / {totalPages}
-                    </span>
+                                        <span className="text-sm text-foreground/40 px-4">
+                                            {page + 1} / {totalPages}
+                                        </span>
                                         <button onClick={() => handleSearch(page + 1)} disabled={page >= totalPages - 1}
-                                                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white/60 disabled:opacity-30 hover:border-white/20 transition-colors">
+                                                className="px-4 py-2 bg-foreground/5 border border-foreground/10 rounded-xl text-sm text-foreground/60 disabled:opacity-30 hover:border-foreground/20 transition-colors">
                                             След →
                                         </button>
                                     </div>
@@ -266,15 +266,6 @@ export default function VacancySearchPage() {
                     </motion.div>
                 )}
 
-                {/* Initial state */}
-                {!loading && !searched && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-                                className="text-center py-20 text-white/20">
-                        <p className="text-6xl mb-4">💼</p>
-                        <p className="text-lg">Введите запрос для поиска вакансий</p>
-                        <p className="text-sm mt-1">Используйте фильтры для уточнения результатов</p>
-                    </motion.div>
-                )}
             </div>
         </div>
     );
