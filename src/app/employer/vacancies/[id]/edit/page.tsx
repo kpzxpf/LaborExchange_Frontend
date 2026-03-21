@@ -5,11 +5,9 @@ import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
     Briefcase,
-    MapPin,
     DollarSign,
     FileText,
     Building2,
-    Calendar,
     ArrowLeft,
     Save,
     Loader2,
@@ -33,10 +31,7 @@ export default function EditVacancyPage() {
         title: "",
         description: "",
         salary: "",
-        location: "",
         companyName: "",
-        employmentType: "FULL_TIME",
-        experienceLevel: "JUNIOR",
     });
 
     useEffect(() => {
@@ -52,10 +47,7 @@ export default function EditVacancyPage() {
                 title: vacancy.title,
                 description: vacancy.description || "",
                 salary: vacancy.salary?.toString() || "",
-                location: vacancy.location || "",
                 companyName: vacancy.companyName || "",
-                employmentType: vacancy.employmentType || "FULL_TIME",
-                experienceLevel: vacancy.experienceLevel || "JUNIOR",
             });
 
             // Load current skills
@@ -90,10 +82,7 @@ export default function EditVacancyPage() {
                 title: formData.title,
                 description: formData.description,
                 salary: formData.salary ? parseFloat(formData.salary) : null,
-                location: formData.location,
                 companyName: formData.companyName,
-                employmentType: formData.employmentType,
-                experienceLevel: formData.experienceLevel,
             });
 
             // 2. Update skills (use bulk update)
@@ -153,7 +142,6 @@ export default function EditVacancyPage() {
     const isFormValid =
         formData.title.trim() &&
         formData.description.trim() &&
-        formData.location.trim() &&
         formData.companyName.trim();
 
     return (
@@ -272,108 +260,28 @@ export default function EditVacancyPage() {
                             />
                         </div>
 
-                        {/* Location & Salary */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <MapPin className="w-4 h-4" />
-                                    Локация *
-                                </label>
-                                <input
-                                    type="text"
-                                    name="location"
-                                    value={formData.location}
-                                    onChange={handleChange}
-                                    placeholder="Москва, Россия"
-                                    required
-                                    className={cn(
-                                        "w-full px-4 py-3 border-2 rounded-xl",
-                                        "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
-                                        "transition-all duration-200",
-                                        "bg-white dark:bg-gray-700",
-                                        "border-gray-200 dark:border-gray-600",
-                                        "text-gray-900 dark:text-gray-100",
-                                        "placeholder:text-gray-400"
-                                    )}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <DollarSign className="w-4 h-4" />
-                                    Зарплата (необязательно)
-                                </label>
-                                <input
-                                    type="number"
-                                    name="salary"
-                                    value={formData.salary}
-                                    onChange={handleChange}
-                                    placeholder="150000"
-                                    className={cn(
-                                        "w-full px-4 py-3 border-2 rounded-xl",
-                                        "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
-                                        "transition-all duration-200",
-                                        "bg-white dark:bg-gray-700",
-                                        "border-gray-200 dark:border-gray-600",
-                                        "text-gray-900 dark:text-gray-100",
-                                        "placeholder:text-gray-400"
-                                    )}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Employment Type & Experience Level */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <Calendar className="w-4 h-4" />
-                                    Тип занятости
-                                </label>
-                                <select
-                                    name="employmentType"
-                                    value={formData.employmentType}
-                                    onChange={handleChange}
-                                    className={cn(
-                                        "w-full px-4 py-3 border-2 rounded-xl",
-                                        "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
-                                        "transition-all duration-200",
-                                        "bg-white dark:bg-gray-700",
-                                        "border-gray-200 dark:border-gray-600",
-                                        "text-gray-900 dark:text-gray-100"
-                                    )}
-                                >
-                                    <option value="FULL_TIME">Полная занятость</option>
-                                    <option value="PART_TIME">Частичная занятость</option>
-                                    <option value="CONTRACT">Контракт</option>
-                                    <option value="FREELANCE">Фриланс</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <Briefcase className="w-4 h-4" />
-                                    Уровень опыта
-                                </label>
-                                <select
-                                    name="experienceLevel"
-                                    value={formData.experienceLevel}
-                                    onChange={handleChange}
-                                    className={cn(
-                                        "w-full px-4 py-3 border-2 rounded-xl",
-                                        "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
-                                        "transition-all duration-200",
-                                        "bg-white dark:bg-gray-700",
-                                        "border-gray-200 dark:border-gray-600",
-                                        "text-gray-900 dark:text-gray-100"
-                                    )}
-                                >
-                                    <option value="INTERN">Стажер</option>
-                                    <option value="JUNIOR">Junior</option>
-                                    <option value="MIDDLE">Middle</option>
-                                    <option value="SENIOR">Senior</option>
-                                    <option value="LEAD">Lead</option>
-                                </select>
-                            </div>
+                        {/* Salary */}
+                        <div>
+                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <DollarSign className="w-4 h-4" />
+                                Зарплата (необязательно)
+                            </label>
+                            <input
+                                type="number"
+                                name="salary"
+                                value={formData.salary}
+                                onChange={handleChange}
+                                placeholder="150000"
+                                className={cn(
+                                    "w-full px-4 py-3 border-2 rounded-xl",
+                                    "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+                                    "transition-all duration-200",
+                                    "bg-white dark:bg-gray-700",
+                                    "border-gray-200 dark:border-gray-600",
+                                    "text-gray-900 dark:text-gray-100",
+                                    "placeholder:text-gray-400"
+                                )}
+                            />
                         </div>
 
                         {/* Description */}

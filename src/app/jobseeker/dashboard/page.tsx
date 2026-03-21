@@ -32,8 +32,8 @@ export default function JobseekerDashboard() {
                     resumeService.getMy(),
                     applicationService.getMy(),
                 ]);
-                if (res.status === 'fulfilled') setResumes(res.value);
-                if (apps.status === 'fulfilled') setApplications(apps.value);
+                if (res.status === 'fulfilled' && Array.isArray(res.value)) setResumes(res.value);
+                if (apps.status === 'fulfilled' && Array.isArray(apps.value)) setApplications(apps.value);
             } finally {
                 setLoading(false);
             }
@@ -90,7 +90,7 @@ export default function JobseekerDashboard() {
 
                 {/* Quick actions */}
                 <div className="grid grid-cols-2 gap-3 mb-8">
-                    <Link href="/search/vacancies"
+                    <Link href="/jobseeker/vacancies"
                           className="p-4 bg-indigo-600/15 border border-indigo-500/25 rounded-2xl hover:bg-indigo-600/25 transition-colors group">
                         <span className="text-2xl block mb-2">⚡</span>
                         <p className="font-semibold text-indigo-500 dark:text-indigo-300 group-hover:text-indigo-400 dark:group-hover:text-indigo-200">Поиск вакансий</p>
@@ -170,7 +170,7 @@ export default function JobseekerDashboard() {
                                 <div className="text-center py-16 text-foreground/25">
                                     <p className="text-4xl mb-3">📭</p>
                                     <p>Откликов ещё нет</p>
-                                    <Link href="/search/vacancies"
+                                    <Link href="/jobseeker/vacancies"
                                           className="mt-4 inline-block px-5 py-2 bg-indigo-600/30 border border-indigo-500/30 rounded-xl text-indigo-500 dark:text-indigo-400 text-sm hover:bg-indigo-600/50 transition-colors">
                                         Найти вакансии
                                     </Link>

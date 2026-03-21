@@ -30,10 +30,9 @@ interface Application {
     vacancyId: number;
     vacancyTitle: string;
     companyName: string;
-    location: string;
-    salary: number | null;
+    location?: string;
+    salary?: number | null;
     statusName: string;
-    statusCode: string;
     createdAt: string;
 }
 
@@ -61,7 +60,7 @@ export default function JobSeekerApplicationsPage() {
         try {
             setIsLoading(true);
             const data = await applicationService.getMy();
-            setApplications(data as unknown as Application[]);
+            setApplications(Array.isArray(data) ? (data as unknown as Application[]) : []);
         } catch (error) {
             console.error("Failed to load applications:", error);
         } finally {

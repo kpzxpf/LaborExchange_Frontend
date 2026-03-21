@@ -28,19 +28,23 @@ export default function VacancySearchPage() {
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [searched, setSearched] = useState(false);
     const [filtersOpen, setFiltersOpen] = useState(false);
 
     const doSearch = useCallback(async (params: VacancySearchRequest) => {
         setLoading(true);
+        setError(null);
         try {
             const res = await searchService.searchVacancies(params);
-            setResults(res.content);
-            setTotalElements(res.totalElements);
-            setTotalPages(res.totalPages);
-            setPage(res.currentPage);
+            setResults(Array.isArray(res.content) ? res.content : []);
+            setTotalElements(res.totalElements ?? 0);
+            setTotalPages(res.totalPages ?? 0);
+            setPage(res.currentPage ?? 0);
             setSearched(true);
-        } catch {
+        } catch (err) {
+            console.error('Vacancy search failed:', err);
+            setError('Не удалось выполнить поиск. Попробуйте позже.');
             setResults([]);
         } finally {
             setLoading(false);
@@ -176,6 +180,13 @@ export default function VacancySearchPage() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                {/* Error */}
+                {error && (
+                    <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-500 dark:text-red-400 text-sm">
+                        {error}
+                    </div>
+                )}
 
                 {/* Results */}
                 {loading && (

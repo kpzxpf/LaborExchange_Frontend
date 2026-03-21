@@ -29,8 +29,8 @@ interface Application {
     id: number;
     vacancyId: number;
     vacancyTitle: string;
-    applicantId: number;
-    applicantName: string;
+    candidateId: number;
+    candidateName: string;
     resumeId: number;
     statusName: string;
     statusCode: string;
@@ -61,7 +61,7 @@ export default function EmployerApplicationsPage() {
         try {
             setIsLoading(true);
             const data = await applicationService.getByEmployer(userId!);
-            setApplications(data as unknown as Application[]);
+            setApplications(Array.isArray(data) ? (data as unknown as Application[]) : []);
         } catch (error) {
             console.error("Failed to load applications:", error);
         } finally {
@@ -82,7 +82,7 @@ export default function EmployerApplicationsPage() {
             filtered = filtered.filter(
                 (app) =>
                     app.vacancyTitle.toLowerCase().includes(query) ||
-                    app.applicantName.toLowerCase().includes(query)
+                    app.candidateName.toLowerCase().includes(query)
             );
         }
 
@@ -277,11 +277,11 @@ export default function EmployerApplicationsPage() {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-3 mb-3">
                                                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
-                                                    {app.applicantName.charAt(0).toUpperCase()}
+                                                    {app.candidateName.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate">
-                                                        {app.applicantName}
+                                                        {app.candidateName}
                                                     </h3>
                                                     <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
                                                         {app.vacancyTitle}

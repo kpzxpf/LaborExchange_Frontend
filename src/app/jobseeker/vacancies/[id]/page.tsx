@@ -28,6 +28,7 @@ export default function VacancyDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isApplying, setIsApplying] = useState(false);
     const [showApplyModal, setShowApplyModal] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
@@ -59,12 +60,12 @@ export default function VacancyDetailPage() {
 
             if (userRole === "JOB_SEEKER" && userId) {
                 const resumesData = await resumeService.getMy();
-                setResumes(resumesData);
-                if (resumesData.length > 0) setSelectedResumeId(resumesData[0].id);
+                const safeResumes = Array.isArray(resumesData) ? resumesData : [];
+                setResumes(safeResumes);
+                if (safeResumes.length > 0) setSelectedResumeId(safeResumes[0].id);
             }
         } catch (error) {
-            toast.error("Не удалось загрузить вакансию");
-            router.back();
+            setError("Не удалось загрузить вакансию. Возможно, она была удалена или недоступна.");
         } finally {
             setIsLoading(false);
         }
@@ -106,6 +107,20 @@ export default function VacancyDetailPage() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-background gap-4">
+                <p className="text-gray-500 dark:text-gray-400 text-center max-w-md">{error}</p>
+                <Link href="/jobseeker/vacancies">
+                    <Button variant="outline">
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        К списку вакансий
+                    </Button>
+                </Link>
             </div>
         );
     }

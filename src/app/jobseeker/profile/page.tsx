@@ -12,6 +12,12 @@ import { apiClient } from "@/lib/apiClient";
 import type { UserDto } from "@/types";
 import toast from "react-hot-toast";
 
+const formatRole = (role?: string) => {
+    if (role === "EMPLOYER") return "Работодатель";
+    if (role === "JOB_SEEKER") return "Соискатель";
+    return role;
+};
+
 export default function JobSeekerProfilePage() {
     const { userId, isAuthenticated, userRole, loading } = useAuth();
     const router = useRouter();
@@ -219,7 +225,7 @@ export default function JobSeekerProfilePage() {
                                             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Роль</label>
                                             <p className="mt-1 text-lg text-gray-900 dark:text-white">
                                                 <span className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-sm">
-                                                    {profile.roleName}
+                                                    {formatRole(profile.roleName)}
                                                 </span>
                                             </p>
                                         </div>

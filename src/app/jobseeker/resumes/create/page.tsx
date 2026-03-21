@@ -24,9 +24,8 @@ interface Education {
     institution: string;
     degree: string;
     fieldOfStudy: string;
-    startDate: string;
-    endDate: string;
-    description: string;
+    startYear: string;
+    endYear: string;
 }
 
 export default function CreateResumePage() {
@@ -45,9 +44,8 @@ export default function CreateResumePage() {
             institution: "",
             degree: "",
             fieldOfStudy: "",
-            startDate: "",
-            endDate: "",
-            description: "",
+            startYear: "",
+            endYear: "",
         },
     ]);
 
@@ -75,9 +73,8 @@ export default function CreateResumePage() {
                 institution: "",
                 degree: "",
                 fieldOfStudy: "",
-                startDate: "",
-                endDate: "",
-                description: "",
+                startYear: "",
+                endYear: "",
             },
         ]);
     };
@@ -111,14 +108,13 @@ export default function CreateResumePage() {
 
             // 3. Add education (FIXED: save education data)
             for (const edu of educations) {
-                if (edu.institution.trim() && edu.degree.trim()) {
+                if (edu.institution.trim() && edu.degree.trim() && edu.fieldOfStudy.trim()) {
                     await educationService.create(resume.id, {
                         institution: edu.institution,
                         degree: edu.degree,
-                        fieldOfStudy: edu.fieldOfStudy || "",
-                        startDate: edu.startDate || undefined,
-                        endDate: edu.endDate || undefined,
-                        description: edu.description || undefined,
+                        fieldOfStudy: edu.fieldOfStudy,
+                        startYear: edu.startYear ? parseInt(edu.startYear) : undefined,
+                        endYear: edu.endYear ? parseInt(edu.endYear) : undefined,
                     });
                 }
             }
@@ -357,11 +353,13 @@ export default function CreateResumePage() {
 
                                         <div className="grid grid-cols-2 gap-2">
                                             <input
-                                                type="date"
-                                                placeholder="Начало"
-                                                value={edu.startDate}
+                                                type="number"
+                                                placeholder="Год начала"
+                                                min={1950}
+                                                max={2030}
+                                                value={edu.startYear}
                                                 onChange={(e) =>
-                                                    handleEducationChange(index, "startDate", e.target.value)
+                                                    handleEducationChange(index, "startYear", e.target.value)
                                                 }
                                                 className={cn(
                                                     "px-4 py-2 border-2 rounded-lg",
@@ -372,11 +370,13 @@ export default function CreateResumePage() {
                                                 )}
                                             />
                                             <input
-                                                type="date"
-                                                placeholder="Окончание"
-                                                value={edu.endDate}
+                                                type="number"
+                                                placeholder="Год окончания"
+                                                min={1950}
+                                                max={2030}
+                                                value={edu.endYear}
                                                 onChange={(e) =>
-                                                    handleEducationChange(index, "endDate", e.target.value)
+                                                    handleEducationChange(index, "endYear", e.target.value)
                                                 }
                                                 className={cn(
                                                     "px-4 py-2 border-2 rounded-lg",
@@ -388,23 +388,6 @@ export default function CreateResumePage() {
                                             />
                                         </div>
                                     </div>
-
-                                    <textarea
-                                        placeholder="Дополнительная информация"
-                                        value={edu.description}
-                                        onChange={(e) =>
-                                            handleEducationChange(index, "description", e.target.value)
-                                        }
-                                        rows={2}
-                                        className={cn(
-                                            "w-full px-4 py-2 border-2 rounded-lg",
-                                            "focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent",
-                                            "bg-white dark:bg-gray-700",
-                                            "border-gray-200 dark:border-gray-600",
-                                            "text-gray-900 dark:text-gray-100",
-                                            "resize-none"
-                                        )}
-                                    />
                                 </motion.div>
                             ))}
                         </AnimatePresence>

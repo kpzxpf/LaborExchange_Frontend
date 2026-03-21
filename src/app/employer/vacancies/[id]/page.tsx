@@ -7,10 +7,8 @@ import {
     Briefcase,
     MapPin,
     DollarSign,
-    Calendar,
     Building2,
     Clock,
-    Users,
     Edit,
     Trash2,
     ArrowLeft,
@@ -21,6 +19,8 @@ import {
     Phone,
     Globe,
     ExternalLink,
+    Eye,
+    EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { vacancyService, skillService, companyService } from "@/services/api";
@@ -38,6 +38,7 @@ interface Vacancy {
     experienceLevel?: string;
     createdAt?: string;
     employerId: number;
+    isPublished?: boolean;
 }
 
 interface Skill {
@@ -56,6 +57,7 @@ export default function VacancyDetailPage() {
     const [company, setCompany] = useState<CompanyDto | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isPublishing, setIsPublishing] = useState(false);
 
     useEffect(() => {
         loadVacancyData();
@@ -109,31 +111,28 @@ export default function VacancyDetailPage() {
         }
     };
 
+    const handlePublishToggle = async () => {
+        if (!vacancy) return;
+        try {
+            setIsPublishing(true);
+            if (vacancy.isPublished) {
+                await vacancyService.unpublish(vacancyId);
+            } else {
+                await vacancyService.publish(vacancyId);
+            }
+            setVacancy(prev => prev ? { ...prev, isPublished: !prev.isPublished } : prev);
+        } catch (error) {
+            console.error("Failed to toggle publish status:", error);
+            alert("Не удалось изменить статус публикации");
+        } finally {
+            setIsPublishing(false);
+        }
+    };
+
     const handleShare = () => {
         const url = window.location.href;
         navigator.clipboard.writeText(url);
         alert("Ссылка скопирована в буфер обмена!");
-    };
-
-    const formatEmploymentType = (type: string) => {
-        const types: Record<string, string> = {
-            FULL_TIME: "Полная занятость",
-            PART_TIME: "Частичная занятость",
-            CONTRACT: "Контракт",
-            FREELANCE: "Фриланс",
-        };
-        return types[type] || type;
-    };
-
-    const formatExperienceLevel = (level: string) => {
-        const levels: Record<string, string> = {
-            INTERN: "Стажер",
-            JUNIOR: "Junior",
-            MIDDLE: "Middle",
-            SENIOR: "Senior",
-            LEAD: "Lead",
-        };
-        return levels[level] || level;
     };
 
     const formatDate = (dateString: string) => {
@@ -194,6 +193,30 @@ export default function VacancyDetailPage() {
 
                         {isOwner && (
                             <div className="flex items-center gap-2">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={handlePublishToggle}
+                                    disabled={isPublishing}
+                                    className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-lg transition-colors disabled:opacity-50",
+                                        vacancy?.isPublished
+                                            ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
+                                            : "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30"
+                                    )}
+                                >
+                                    {isPublishing ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : vacancy?.isPublished ? (
+                                        <EyeOff className="w-4 h-4" />
+                                    ) : (
+                                        <Eye className="w-4 h-4" />
+                                    )}
+                                    <span className="hidden sm:inline">
+                                        {vacancy?.isPublished ? "Снять с публикации" : "Опубликовать"}
+                                    </span>
+                                </motion.button>
+
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
@@ -402,34 +425,6 @@ export default function VacancyDetailPage() {
                                     </div>
                                 </div>
                             )}
-
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-                                    <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Тип занятости
-                                    </p>
-                                    <p className="font-semibold text-gray-900 dark:text-white">
-                                        {formatEmploymentType(vacancy.employmentType ?? "")}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
-                                    <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Уровень опыта
-                                    </p>
-                                    <p className="font-semibold text-gray-900 dark:text-white">
-                                        {formatExperienceLevel(vacancy.experienceLevel ?? "")}
-                                    </p>
-                                </div>
-                            </div>
 
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">

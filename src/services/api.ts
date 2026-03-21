@@ -76,13 +76,14 @@ export const vacancyService = {
 export const companyService = {
     getAll: () => api.get<CompanyDto[]>('/api/companies').then(r => r.data),
     getById: (id: number) => api.get<CompanyDto>(`/api/companies/${id}`).then(r => r.data),
-    getMyCompany: () => api.get<CompanyDto>('/api/companies/my').then(r => r.data),
+    getMyCompany: () => api.get<CompanyDto>('/api/companies/my').then(r => r.data || null),
     getByEmployerId: (employerId: number) =>
-        api.get<CompanyDto>(`/api/companies/employer/${employerId}`).then(r => r.data),
+        api.get<CompanyDto>(`/api/companies/employer/${employerId}`).then(r => r.data || null),
     create: (data: Omit<CompanyDto, 'id'>) =>
         api.post<CompanyDto>('/api/companies', data).then(r => r.data),
     update: (id: number, data: Partial<CompanyDto>) =>
         api.put<CompanyDto>(`/api/companies/${id}`, data).then(r => r.data),
+    delete: (id: number) => api.delete(`/api/companies/${id}`),
 };
 
 // ======================== RESUME ========================
@@ -132,7 +133,7 @@ export const skillService = {
     getNamesByIds: (ids: number[]): Promise<string[]> => {
         if (!ids || ids.length === 0) return Promise.resolve([]);
         return api.get<string[]>('/api/skills/names/by-ids', {
-            params: { ids: ids.join(',') },
+            params: new URLSearchParams(ids.map(id => ['ids', id.toString()])),
         }).then(r => r.data);
     },
     getByIds: async (ids: number[]): Promise<SkillDto[]> => {

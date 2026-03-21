@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Eye, Trash2, Briefcase, DollarSign } from "lucide-react";
+import { Plus, Eye, Trash2, Briefcase, DollarSign, Globe, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Button from "@/components/ui/Button";
 import Card, { CardContent } from "@/components/ui/Card";
@@ -35,9 +35,9 @@ export default function EmployerVacanciesPage() {
         setIsLoading(true);
         try {
             const response = await vacancyService.getByEmployer(userId, 0, 100);
-            setVacancies(response.content);
+            setVacancies(Array.isArray(response.content) ? response.content : []);
         } catch (error) {
-            toast.error("Failed to load vacancies");
+            toast.error("Не удалось загрузить вакансии");
             console.error("Fetch vacancies error:", error);
         } finally {
             setIsLoading(false);
@@ -45,14 +45,29 @@ export default function EmployerVacanciesPage() {
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this vacancy?")) return;
+        if (!confirm("Удалить вакансию?")) return;
 
         try {
             await vacancyService.delete(id);
-            toast.success("Vacancy deleted successfully");
+            toast.success("Вакансия удалена");
             fetchVacancies();
         } catch (error) {
-            toast.error("Failed to delete vacancy");
+            toast.error("Не удалось удалить вакансию");
+        }
+    };
+
+    const handleTogglePublish = async (vacancy: VacancyDto) => {
+        try {
+            if (vacancy.isPublished) {
+                await vacancyService.unpublish(vacancy.id);
+                toast.success("Вакансия снята с публикации");
+            } else {
+                await vacancyService.publish(vacancy.id);
+                toast.success("Вакансия опубликована");
+            }
+            fetchVacancies();
+        } catch (error) {
+            toast.error("Не удалось изменить статус публикации");
         }
     };
 
@@ -77,7 +92,7 @@ export default function EmployerVacanciesPage() {
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                             Мои вакансии
                         </h1>
-                        <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500">
+                        <p className="text-gray-600 dark:text-gray-400">
                             Управление объявлениями о вакансиях
                         </p>
                     </div>
@@ -103,11 +118,20 @@ export default function EmployerVacanciesPage() {
                                     <CardContent className="p-6">
                                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                             <div className="flex-1">
-                                                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                                                    {vacancy.title}
-                                                </h3>
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                                        {vacancy.title}
+                                                    </h3>
+                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                        vacancy.isPublished
+                                                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                                            : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                                                    }`}>
+                                                        {vacancy.isPublished ? "Опубликована" : "Черновик"}
+                                                    </span>
+                                                </div>
 
-                                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 mb-3">
+                                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
                                                     <div className="flex items-center">
                                                         <Briefcase className="h-4 w-4 mr-1" />
                                                         {vacancy.companyName}
@@ -116,7 +140,7 @@ export default function EmployerVacanciesPage() {
                                                     {vacancy.salary && vacancy.salary > 0 && (
                                                         <div className="flex items-center text-green-600 font-medium">
                                                             <DollarSign className="h-4 w-4 mr-1" />
-                                                            ${vacancy.salary.toLocaleString()}
+                                                            {vacancy.salary.toLocaleString()} ₽
                                                         </div>
                                                     )}
                                                 </div>
@@ -127,6 +151,24 @@ export default function EmployerVacanciesPage() {
                                             </div>
 
                                             <div className="flex items-center gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleTogglePublish(vacancy)}
+                                                    title={vacancy.isPublished ? "Снять с публикации" : "Опубликовать"}
+                                                >
+                                                    {vacancy.isPublished ? (
+                                                        <>
+                                                            <EyeOff className="h-4 w-4 mr-1" />
+                                                            Скрыть
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Globe className="h-4 w-4 mr-1" />
+                                                            Опубликовать
+                                                        </>
+                                                    )}
+                                                </Button>
                                                 <Link href={`/employer/vacancies/${vacancy.id}`}>
                                                     <Button variant="outline" size="sm">
                                                         <Eye className="h-4 w-4 mr-2" />
@@ -158,7 +200,7 @@ export default function EmployerVacanciesPage() {
                                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                                     Вакансий пока нет
                                 </h3>
-                                <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 mb-6">
+                                <p className="text-gray-600 dark:text-gray-400 mb-6">
                                     Создайте первое объявление о вакансии, чтобы начать набор персонала
                                 </p>
                                 <Link href="/employer/vacancies/create">

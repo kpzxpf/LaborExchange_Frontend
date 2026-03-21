@@ -81,9 +81,17 @@ export default function EmployerDashboard() {
                         <p className="text-foreground/35 text-sm mb-1" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
                             {new Date().toLocaleDateString('ru', { weekday: 'long', day: 'numeric', month: 'long' })}
                         </p>
-                        <h1 className="text-3xl font-semibold">
-                            {company ? company.name : 'Панель работодателя'}
-                        </h1>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-3xl font-semibold">
+                                {company ? company.name : 'Панель работодателя'}
+                            </h1>
+                            {company && (
+                                <Link href="/employer/company"
+                                      className="text-xs text-foreground/35 hover:text-violet-400 border border-foreground/10 hover:border-violet-400/40 px-2.5 py-1 rounded-lg transition-colors">
+                                    Редактировать
+                                </Link>
+                            )}
+                        </div>
                         {company?.location && <p className="text-foreground/40 text-sm mt-1">📍 {company.location}</p>}
                     </div>
                     <div className="flex gap-2">

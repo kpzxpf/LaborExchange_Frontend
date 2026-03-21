@@ -42,6 +42,7 @@ export default function CreateVacancyPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [companyLoading, setCompanyLoading] = useState(true);
     const [myCompany, setMyCompany] = useState<CompanyDto | null>(null);
+    const [editingCompany, setEditingCompany] = useState(false);
     const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
 
     const [formData, setFormData] = useState({
@@ -51,6 +52,14 @@ export default function CreateVacancyPage() {
     });
 
     const [companyForm, setCompanyForm] = useState({
+        name: "",
+        description: "",
+        location: "",
+        email: "",
+        phoneNumber: "",
+        website: "",
+    });
+    const [editCompanyForm, setEditCompanyForm] = useState({
         name: "",
         description: "",
         location: "",
@@ -74,6 +83,31 @@ export default function CreateVacancyPage() {
     const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setCompanyForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSaveEditCompany = async () => {
+        if (!myCompany) return;
+        try {
+            const updated = await companyService.update(myCompany.id, editCompanyForm);
+            setMyCompany(updated);
+            setEditingCompany(false);
+            toast.success("Компания обновлена!");
+        } catch {
+            toast.error("Не удалось обновить компанию");
+        }
+    };
+
+    const startEditCompany = () => {
+        if (!myCompany) return;
+        setEditCompanyForm({
+            name: myCompany.name || "",
+            description: myCompany.description || "",
+            location: myCompany.location || "",
+            email: myCompany.email || "",
+            phoneNumber: myCompany.phoneNumber || "",
+            website: myCompany.website || "",
+        });
+        setEditingCompany(true);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -175,7 +209,7 @@ export default function CreateVacancyPage() {
                                 <Loader2 className="w-5 h-5 animate-spin" />
                                 <span>Загрузка информации о компании...</span>
                             </div>
-                        ) : myCompany ? (
+                        ) : myCompany && !editingCompany ? (
                             /* Компания уже есть */
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
@@ -183,7 +217,7 @@ export default function CreateVacancyPage() {
                                 className="flex items-start gap-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800"
                             >
                                 <CheckCircle className="w-6 h-6 text-green-600 shrink-0 mt-0.5" />
-                                <div>
+                                <div className="flex-1">
                                     <p className="font-semibold text-gray-900 dark:text-white text-lg">{myCompany.name}</p>
                                     {myCompany.location && (
                                         <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
@@ -203,6 +237,76 @@ export default function CreateVacancyPage() {
                                     <p className="text-xs text-green-600 dark:text-green-400 mt-2">
                                         Вакансия будет привязана к этой компании
                                     </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={startEditCompany}
+                                    className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 underline shrink-0"
+                                >
+                                    Изменить
+                                </button>
+                            </motion.div>
+                        ) : myCompany && editingCompany ? (
+                            /* Редактирование компании */
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Редактирование компании</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="md:col-span-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                            <Building2 className="w-4 h-4 inline mr-1" />Название *
+                                        </label>
+                                        <input name="name" value={editCompanyForm.name}
+                                            onChange={e => setEditCompanyForm(p => ({ ...p, name: e.target.value }))}
+                                            className={inputCls} />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                            <MapPin className="w-4 h-4 inline mr-1" />Местоположение *
+                                        </label>
+                                        <input name="location" value={editCompanyForm.location}
+                                            onChange={e => setEditCompanyForm(p => ({ ...p, location: e.target.value }))}
+                                            className={inputCls} />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                            <Mail className="w-4 h-4 inline mr-1" />Email *
+                                        </label>
+                                        <input type="email" name="email" value={editCompanyForm.email}
+                                            onChange={e => setEditCompanyForm(p => ({ ...p, email: e.target.value }))}
+                                            className={inputCls} />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                            <Phone className="w-4 h-4 inline mr-1" />Телефон
+                                        </label>
+                                        <input name="phoneNumber" value={editCompanyForm.phoneNumber}
+                                            onChange={e => setEditCompanyForm(p => ({ ...p, phoneNumber: e.target.value }))}
+                                            className={inputCls} />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                            <Globe className="w-4 h-4 inline mr-1" />Сайт
+                                        </label>
+                                        <input name="website" value={editCompanyForm.website}
+                                            onChange={e => setEditCompanyForm(p => ({ ...p, website: e.target.value }))}
+                                            className={inputCls} />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Описание</label>
+                                        <textarea name="description" value={editCompanyForm.description} rows={2}
+                                            onChange={e => setEditCompanyForm(p => ({ ...p, description: e.target.value }))}
+                                            className={cn(inputCls, "resize-none")} />
+                                    </div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button type="button" onClick={handleSaveEditCompany}
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors">
+                                        Сохранить компанию
+                                    </button>
+                                    <button type="button" onClick={() => setEditingCompany(false)}
+                                        className="px-5 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        Отмена
+                                    </button>
                                 </div>
                             </motion.div>
                         ) : (

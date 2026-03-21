@@ -504,6 +504,5 @@ CMD ["npm", "start"]
 
 <div align="center">
 
-**Made with ❤️ by the LaborExchange Team**
 
 </div>
