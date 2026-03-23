@@ -4,14 +4,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Briefcase, UserCircle, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Briefcase, UserCircle, ArrowRight, CheckCircle2, ChevronLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import Card, { CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import type { RegisterRequest } from "@/types";
 import { handleApiError } from "@/lib/apiClient";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 type FormData = RegisterRequest;
 
@@ -31,7 +30,6 @@ export default function RegisterPage() {
             toast.error("Пожалуйста, выберите роль");
             return;
         }
-
         setIsLoading(true);
         try {
             await registerUser({ ...data, userRole: selectedRole });
@@ -48,11 +46,13 @@ export default function RegisterPage() {
             icon: UserCircle,
             title: "Соискатель",
             description: "Я ищу возможности для трудоустройства",
+            color: "from-indigo-500 to-violet-500",
+            glow: "rgba(99,102,241,0.35)",
             features: [
                 "Просмотр вакансий",
                 "Создание резюме",
-                "Подача заявок на вакансии",
-                "Отслеживание откликов"
+                "Подача заявок",
+                "Отслеживание откликов",
             ],
         },
         {
@@ -60,37 +60,57 @@ export default function RegisterPage() {
             icon: Briefcase,
             title: "Работодатель",
             description: "Я нанимаю специалистов для своей компании",
+            color: "from-violet-500 to-purple-500",
+            glow: "rgba(139,92,246,0.35)",
             features: [
                 "Публикация вакансий",
-                "Управление компаниями",
+                "Управление компанией",
                 "Просмотр откликов",
-                "Поиск кандидатов"
+                "Поиск кандидатов",
             ],
         },
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-gray-950 dark:via-background dark:to-purple-950/30 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen py-12 px-4" style={{ background: "rgb(var(--bg))" }}>
+            <div className="mesh-bg fixed inset-0 pointer-events-none" />
+            <div className="grid-pattern fixed inset-0 pointer-events-none" />
+
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="max-w-4xl mx-auto"
+                className="relative max-w-3xl mx-auto"
             >
-                <div className="text-center mb-8">
+                {/* Header */}
+                <div className="text-center mb-10">
+                    <motion.div
+                        initial={{ scale: 0.7, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+                        className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5"
+                        style={{
+                            background: "linear-gradient(135deg, rgb(99,102,241), rgb(139,92,246))",
+                            boxShadow: "0 12px 32px rgba(99,102,241,0.4)",
+                        }}
+                    >
+                        <Briefcase className="h-7 w-7 text-white" />
+                    </motion.div>
                     <motion.h1
-                        initial={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-4xl font-bold text-foreground mb-2"
+                        className="text-3xl sm:text-4xl font-bold mb-2"
+                        style={{ color: "rgb(var(--text-1))" }}
                     >
-                        Присоединяйтесь к <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">LaborExchange</span>
+                        Присоединяйтесь к{" "}
+                        <span className="gradient-text">LaborExchange</span>
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="text-foreground/60"
+                        style={{ color: "rgb(var(--text-3))" }}
                     >
                         Создайте аккаунт и начните свой путь
                     </motion.p>
@@ -99,176 +119,187 @@ export default function RegisterPage() {
                 {/* Role Selection */}
                 {!selectedRole && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="mb-8"
+                        transition={{ delay: 0.3 }}
                     >
-                        <h2 className="text-2xl font-semibold text-foreground text-center mb-6">
-                            Что привело вас сюда?
+                        <h2 className="text-lg font-semibold text-center mb-6" style={{ color: "rgb(var(--text-2))" }}>
+                            Выберите вашу роль
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {roleOptions.map((option) => (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            {roleOptions.map((option, index) => (
                                 <motion.div
                                     key={option.value}
-                                    whileHover={{ scale: 1.02 }}
+                                    initial={{ opacity: 0, y: 16 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 * index + 0.4 }}
+                                    whileHover={{ y: -3 }}
                                     whileTap={{ scale: 0.98 }}
+                                    onClick={() => setSelectedRole(option.value)}
+                                    className="glass-card p-6 cursor-pointer group transition-all duration-300 hover:border-indigo-500/40"
+                                    style={{
+                                        boxShadow: "none",
+                                    }}
                                 >
-                                    <Card
-                                        hover
-                                        className={`cursor-pointer transition-all shadow-md hover:shadow-xl ${
-                                            selectedRole === option.value
-                                                ? "ring-2 ring-blue-500 border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                                                : "hover:border-blue-300 dark:hover:border-blue-600"
-                                        }`}
-                                        onClick={() => setSelectedRole(option.value)}
-                                    >
-                                        <CardContent className="p-6">
-                                            <div className="flex items-start space-x-4">
-                                                <div className="bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/40 dark:to-purple-900/40 p-3 rounded-lg shadow-md">
-                                                    <option.icon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h3 className="text-xl font-semibold text-foreground mb-1">
-                                                        {option.title}
-                                                    </h3>
-                                                    <p className="text-foreground/60 text-sm mb-4">
-                                                        {option.description}
-                                                    </p>
-                                                    <ul className="space-y-2">
-                                                        {option.features.map((feature, index) => (
-                                                            <li key={index} className="flex items-center text-sm text-foreground/70">
-                                                                <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                                                                {feature}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                    <div className="flex items-start gap-4">
+                                        <div
+                                            className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br ${option.color}`}
+                                            style={{ boxShadow: `0 8px 20px ${option.glow}` }}
+                                        >
+                                            <option.icon className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-lg font-semibold mb-1" style={{ color: "rgb(var(--text-1))" }}>
+                                                {option.title}
+                                            </h3>
+                                            <p className="text-sm mb-4" style={{ color: "rgb(var(--text-3))" }}>
+                                                {option.description}
+                                            </p>
+                                            <ul className="space-y-1.5">
+                                                {option.features.map((feature, i) => (
+                                                    <li key={i} className="flex items-center gap-2 text-sm" style={{ color: "rgb(var(--text-2))" }}>
+                                                        <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" style={{ color: "rgb(52, 211, 153)" }} />
+                                                        {feature}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                                        <span className="text-sm font-medium" style={{ color: "var(--badge-indigo-color)" }}>
+                                            Выбрать →
+                                        </span>
+                                    </div>
                                 </motion.div>
                             ))}
                         </div>
+
+                        <p className="mt-6 text-center text-sm" style={{ color: "rgb(var(--text-3))" }}>
+                            Уже есть аккаунт?{" "}
+                            <Link href="/auth/login" className="font-medium hover:underline" style={{ color: "var(--badge-indigo-color)" }}>
+                                Войти
+                            </Link>
+                        </p>
                     </motion.div>
                 )}
 
                 {/* Registration Form */}
                 {selectedRole && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
+                        transition={{ duration: 0.4 }}
+                        className="max-w-md mx-auto"
                     >
-                        <Card className="shadow-xl">
-                            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <CardTitle>Завершите регистрацию</CardTitle>
-                                        <CardDescription>
-                                            Регистрируетесь как:{" "}
-                                            <span className="font-semibold text-blue-600 dark:text-blue-400">
-                                                {roleOptions.find((r) => r.value === selectedRole)?.title}
-                                            </span>
-                                        </CardDescription>
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setSelectedRole(null)}
-                                    >
-                                        Изменить роль
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                                    <Input
-                                        label="Имя пользователя"
-                                        placeholder="ivan_petrov"
-                                        required
-                                        error={errors.username?.message}
-                                        {...register("username", {
-                                            required: "Имя пользователя обязательно",
-                                            minLength: {
-                                                value: 3,
-                                                message: "Имя пользователя должно содержать минимум 3 символа",
-                                            },
-                                            maxLength: {
-                                                value: 32,
-                                                message: "Имя пользователя должно содержать максимум 32 символа",
-                                            },
-                                        })}
-                                    />
+                        {/* Back button + role badge */}
+                        <div className="flex items-center justify-between mb-6">
+                            <button
+                                onClick={() => setSelectedRole(null)}
+                                className="flex items-center gap-1.5 text-sm transition-colors hover:text-white"
+                                style={{ color: "rgb(var(--text-3))" }}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                                Изменить роль
+                            </button>
+                            <div
+                                className="flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium"
+                                style={{
+                                    background: "rgba(99,102,241,0.12)",
+                                    border: "1px solid rgba(99,102,241,0.3)",
+                                    color: "var(--badge-indigo-color)",
+                                }}
+                            >
+                                {(() => {
+                                    const opt = roleOptions.find(r => r.value === selectedRole);
+                                    if (!opt) return null;
+                                    const Icon = opt.icon;
+                                    return (
+                                        <>
+                                            <Icon className="h-3.5 w-3.5" />
+                                            {opt.title}
+                                        </>
+                                    );
+                                })()}
+                            </div>
+                        </div>
 
-                                    <Input
-                                        label="Электронная почта"
-                                        type="email"
-                                        placeholder="ivan@example.com"
-                                        required
-                                        error={errors.email?.message}
-                                        {...register("email", {
-                                            required: "Электронная почта обязательна",
-                                            pattern: {
-                                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                message: "Неверный формат электронной почты",
-                                            },
-                                        })}
-                                    />
+                        <div className="glass-card p-8">
+                            <h2 className="text-xl font-semibold mb-6" style={{ color: "rgb(var(--text-1))" }}>
+                                Завершите регистрацию
+                            </h2>
+                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                                <Input
+                                    label="Имя пользователя"
+                                    placeholder="ivan_petrov"
+                                    required
+                                    error={errors.username?.message}
+                                    {...register("username", {
+                                        required: "Имя пользователя обязательно",
+                                        minLength: { value: 3, message: "Минимум 3 символа" },
+                                        maxLength: { value: 32, message: "Максимум 32 символа" },
+                                    })}
+                                />
 
-                                    <Input
-                                        label="Номер телефона"
-                                        type="tel"
-                                        placeholder="+79001234567"
-                                        required
-                                        error={errors.phone?.message}
-                                        {...register("phone", {
-                                            required: "Номер телефона обязателен",
-                                            pattern: {
-                                                value: /^\+?[0-9]{10,15}$/,
-                                                message: "Номер телефона должен содержать 10-15 цифр",
-                                            },
-                                        })}
-                                    />
+                                <Input
+                                    label="Электронная почта"
+                                    type="email"
+                                    placeholder="ivan@example.com"
+                                    required
+                                    error={errors.email?.message}
+                                    {...register("email", {
+                                        required: "Электронная почта обязательна",
+                                        pattern: {
+                                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                            message: "Неверный формат",
+                                        },
+                                    })}
+                                />
 
-                                    <Input
-                                        label="Пароль"
-                                        type="password"
-                                        placeholder="••••••••"
-                                        required
-                                        error={errors.password?.message}
-                                        {...register("password", {
-                                            required: "Пароль обязателен",
-                                            minLength: {
-                                                value: 8,
-                                                message: "Пароль должен содержать минимум 8 символов",
-                                            },
-                                            maxLength: {
-                                                value: 64,
-                                                message: "Пароль должен содержать максимум 64 символа",
-                                            },
-                                        })}
-                                    />
+                                <Input
+                                    label="Номер телефона"
+                                    type="tel"
+                                    placeholder="+79001234567"
+                                    required
+                                    error={errors.phone?.message}
+                                    {...register("phone", {
+                                        required: "Номер телефона обязателен",
+                                        pattern: {
+                                            value: /^\+?[0-9]{10,15}$/,
+                                            message: "10–15 цифр",
+                                        },
+                                    })}
+                                />
 
-                                    <Button type="submit" className="w-full shadow-md hover:shadow-lg transition-shadow" isLoading={isLoading}>
-                                        Создать аккаунт
-                                        <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Button>
-                                </form>
+                                <Input
+                                    label="Пароль"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    required
+                                    error={errors.password?.message}
+                                    {...register("password", {
+                                        required: "Пароль обязателен",
+                                        minLength: { value: 8, message: "Минимум 8 символов" },
+                                        maxLength: { value: 64, message: "Максимум 64 символа" },
+                                    })}
+                                />
 
-                                <div className="mt-6 text-center">
-                                    <p className="text-sm text-foreground/60">
-                                        Уже есть аккаунт?{" "}
-                                        <Link
-                                            href="/auth/login"
-                                            className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                                        >
-                                            Войти
-                                        </Link>
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                <Button
+                                    type="submit"
+                                    className="w-full btn-primary flex items-center justify-center gap-2 py-3 mt-2"
+                                    isLoading={isLoading}
+                                >
+                                    Создать аккаунт
+                                    <ArrowRight className="h-4 w-4" />
+                                </Button>
+                            </form>
+
+                            <p className="mt-5 text-center text-sm" style={{ color: "rgb(var(--text-3))" }}>
+                                Уже есть аккаунт?{" "}
+                                <Link href="/auth/login" className="font-medium hover:underline" style={{ color: "var(--badge-indigo-color)" }}>
+                                    Войти
+                                </Link>
+                            </p>
+                        </div>
                     </motion.div>
                 )}
             </motion.div>

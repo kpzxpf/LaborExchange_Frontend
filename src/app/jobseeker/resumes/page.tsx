@@ -1,16 +1,54 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Eye, Edit, Trash2, FileText } from "lucide-react";
+import {
+    Plus, Eye, Edit, Trash2, FileText, MapPin,
+    Briefcase, Mail, Globe, Sparkles,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import Button from "@/components/ui/Button";
-import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { resumeService } from "@/services/api";
 import type { ResumeDto } from "@/types";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
+
+const GRADIENTS = [
+    "from-indigo-500 to-purple-600",
+    "from-blue-500 to-cyan-500",
+    "from-violet-500 to-pink-500",
+    "from-emerald-500 to-teal-500",
+    "from-orange-500 to-rose-500",
+];
+
+function getInitials(r: ResumeDto) {
+    if (r.firstName || r.lastName) {
+        return `${(r.firstName ?? "")[0] ?? ""}${(r.lastName ?? "")[0] ?? ""}`.toUpperCase();
+    }
+    return r.title.slice(0, 2).toUpperCase();
+}
+
+function getFullName(r: ResumeDto) {
+    if (r.firstName || r.lastName) return [r.firstName, r.lastName].filter(Boolean).join(" ");
+    return null;
+}
+
+function SkeletonCard() {
+    return (
+        <div className="card overflow-hidden">
+            <div className="h-24 skeleton" />
+            <div className="p-5 space-y-3">
+                <div className="skeleton h-5 w-2/3 rounded-lg" />
+                <div className="skeleton h-4 w-1/2 rounded-lg" />
+                <div className="skeleton h-4 w-full rounded-lg" />
+                <div className="flex gap-2 pt-2">
+                    <div className="skeleton h-8 flex-1 rounded-xl" />
+                    <div className="skeleton h-8 flex-1 rounded-xl" />
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export default function ResumesListPage() {
     const { userId, isAuthenticated, userRole, loading } = useAuth();
@@ -20,207 +58,189 @@ export default function ResumesListPage() {
 
     useEffect(() => {
         if (loading) return;
-
-        if (!isAuthenticated || userRole !== "JOB_SEEKER") {
-            router.push("/auth/login");
-            return;
-        }
-
-        if (userId) {
-            fetchResumes();
-        }
+        if (!isAuthenticated || userRole !== "JOB_SEEKER") { router.push("/auth/login"); return; }
+        if (userId) fetchResumes();
     }, [isAuthenticated, userRole, userId, loading, router]);
 
     const fetchResumes = async () => {
-        if (!userId) return;
-
         setIsLoading(true);
-        try {
-            const data = await resumeService.getMy();
-            setResumes(data || []);
-        } catch (error) {
-            console.error("Resumes error:", error);
-            toast.error("Не удалось загрузить резюме");
-            setResumes([]);
-        } finally {
-            setIsLoading(false);
-        }
+        try { setResumes((await resumeService.getMy()) || []); }
+        catch { toast.error("Не удалось загрузить резюме"); setResumes([]); }
+        finally { setIsLoading(false); }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm("Вы уверены, что хотите удалить это резюме?")) return;
-
-        try {
-            await resumeService.delete(id);
-            toast.success("Резюме успешно удалено");
-            fetchResumes();
-        } catch (error) {
-            toast.error("Не удалось удалить резюме");
-        }
+        if (!confirm("Удалить резюме?")) return;
+        try { await resumeService.delete(id); toast.success("Резюме удалено"); fetchResumes(); }
+        catch { toast.error("Не удалось удалить резюме"); }
     };
 
     const handleTogglePublish = async (resume: ResumeDto) => {
         try {
-            if (resume.isPublished) {
-                await resumeService.unpublish(resume.id);
-                toast.success("Резюме снято с публикации");
-            } else {
-                await resumeService.publish(resume.id);
-                toast.success("Резюме опубликовано");
-            }
+            resume.isPublished ? await resumeService.unpublish(resume.id) : await resumeService.publish(resume.id);
+            toast.success(resume.isPublished ? "Снято с публикации" : "Опубликовано");
             fetchResumes();
-        } catch (error) {
-            toast.error("Не удалось изменить статус публикации");
-        }
+        } catch { toast.error("Не удалось изменить статус"); }
     };
 
-    if (loading || isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-gray-950 dark:via-background dark:to-gray-950">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-                    <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500">Загрузка...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!isAuthenticated || userRole !== "JOB_SEEKER") {
-        return null;
-    }
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-gray-950 dark:via-background dark:to-gray-950 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8 flex items-center justify-between"
-                >
+        <div className="min-h-screen py-8" style={{ background: "rgb(var(--bg))", color: "rgb(var(--text-1))" }}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+                {/* Header */}
+                <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                            Мои резюме
-                        </h1>
-                        <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500">
-                            Управляйте резюме и откликайтесь на вакансии
+                        <h1 className="text-3xl font-bold">Мои резюме</h1>
+                        <p className="mt-1 text-sm" style={{ color: "rgb(var(--text-3))" }}>
+                            {resumes.length > 0 ? `${resumes.length} ${resumes.length === 1 ? "резюме" : resumes.length < 5 ? "резюме" : "резюме"}` : "Управляйте резюме и откликайтесь на вакансии"}
                         </p>
                     </div>
-                    <Link href="/jobseeker/resumes/create">
-                        <Button className="shadow-md hover:shadow-lg transition-shadow">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Создать резюме
-                        </Button>
-                    </Link>
+                    <div className="flex items-center gap-3">
+                        <Link href="/jobseeker/resumes/create">
+                            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold"
+                                style={{ background: "linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.15))", border: "1px solid rgba(99,102,241,0.35)", color: "rgb(99,102,241)" }}>
+                                <Sparkles className="w-4 h-4" /> Создать с ИИ
+                            </motion.button>
+                        </Link>
+                        <Link href="/jobseeker/resumes/create">
+                            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                                className="btn-primary flex items-center gap-2">
+                                <Plus className="h-4 w-4" /> Новое резюме
+                            </motion.button>
+                        </Link>
+                    </div>
                 </motion.div>
 
-                {resumes.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {resumes.map((resume, index) => (
-                            <motion.div
-                                key={resume.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                            >
-                                <Card hover className="shadow-md hover:shadow-xl transition-all bg-white dark:bg-gray-800 h-full">
-                                    <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-700">
-                                        <CardTitle className="text-lg">{resume.title}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="space-y-3">
-                                            {resume.isPublished !== undefined && (
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                                        resume.isPublished
-                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                                                    }`}>
-                                                        {resume.isPublished ? '✓ Опубликовано' : 'Не опубликовано'}
+                {/* Content */}
+                {loading || isLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {[...Array(3)].map((_, i) => <SkeletonCard key={i} />)}
+                    </div>
+                ) : resumes.length === 0 ? (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                        className="glass-card p-16 text-center">
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 icon-box">
+                            <FileText className="h-8 w-8" style={{ color: "rgb(99,102,241)" }} />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2">Пока нет резюме</h3>
+                        <p className="mb-6 text-sm" style={{ color: "rgb(var(--text-3))" }}>
+                            Создайте своё первое резюме, чтобы начать откликаться на вакансии
+                        </p>
+                        <Link href="/jobseeker/resumes/create">
+                            <button className="btn-primary flex items-center gap-2 mx-auto">
+                                <Plus className="h-4 w-4" /> Создать первое резюме
+                            </button>
+                        </Link>
+                    </motion.div>
+                ) : (
+                    <AnimatePresence>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {resumes.map((resume, index) => {
+                                const gradient = GRADIENTS[index % GRADIENTS.length];
+                                const fullName = getFullName(resume);
+
+                                return (
+                                    <motion.div key={resume.id}
+                                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        transition={{ delay: index * 0.06 }}
+                                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                                        className="card overflow-hidden flex flex-col">
+
+                                        {/* Gradient header */}
+                                        <div className={`relative bg-gradient-to-br ${gradient} p-5`}>
+                                            <div className="flex items-start justify-between">
+                                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                                                    resume.isPublished
+                                                        ? "bg-white/20 text-white border border-white/30"
+                                                        : "bg-black/20 text-white/80 border border-white/10"
+                                                }`}>
+                                                    {resume.isPublished ? "Опубликовано" : "Черновик"}
+                                                </span>
+                                            </div>
+                                            {fullName && (
+                                                <p className="text-white/90 font-semibold mt-3 text-sm">{fullName}</p>
+                                            )}
+                                            <h3 className="text-white font-bold mt-1 text-base leading-tight line-clamp-2">
+                                                {resume.title}
+                                            </h3>
+                                        </div>
+
+                                        {/* Body */}
+                                        <div className="p-5 flex flex-col flex-1">
+                                            {/* Meta chips */}
+                                            <div className="flex flex-wrap gap-2 mb-4">
+                                                {resume.location && (
+                                                    <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full"
+                                                        style={{ background: "rgba(99,102,241,0.08)", color: "rgb(var(--text-2))", border: "1px solid var(--card-border)" }}>
+                                                        <MapPin className="w-3 h-3" /> {resume.location}
                                                     </span>
-                                                </div>
-                                            )}
+                                                )}
+                                                {resume.experienceYears != null && (
+                                                    <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full"
+                                                        style={{ background: "rgba(99,102,241,0.08)", color: "rgb(var(--text-2))", border: "1px solid var(--card-border)" }}>
+                                                        <Briefcase className="w-3 h-3" /> {resume.experienceYears} {resume.experienceYears === 1 ? "год" : resume.experienceYears < 5 ? "года" : "лет"}
+                                                    </span>
+                                                )}
+                                            </div>
 
-                                            {resume.experienceYears !== undefined && resume.experienceYears !== null && (
-                                                <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">
-                                                    <span className="font-medium">Опыт:</span> {resume.experienceYears} лет
-                                                </p>
-                                            )}
-
-                                            {resume.contactEmail && (
-                                                <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 truncate">
-                                                    <span className="font-medium">Email:</span> {resume.contactEmail}
-                                                </p>
-                                            )}
-
+                                            {/* Summary preview */}
                                             {resume.summary && (
-                                                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
+                                                <p className="text-sm line-clamp-2 mb-3 flex-1 leading-relaxed"
+                                                    style={{ color: "rgb(var(--text-3))" }}>
                                                     {resume.summary}
                                                 </p>
                                             )}
 
-                                            <div className="flex flex-col gap-2 pt-4 border-t dark:border-gray-700">
+                                            {/* Contact */}
+                                            {resume.contactEmail && (
+                                                <div className="flex items-center gap-1.5 mb-4">
+                                                    <Mail className="w-3.5 h-3.5 shrink-0" style={{ color: "rgb(var(--text-3))" }} />
+                                                    <span className="text-xs truncate" style={{ color: "rgb(var(--text-3))" }}>
+                                                        {resume.contactEmail}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {/* Actions */}
+                                            <div className="flex flex-col gap-2 pt-4 border-t mt-auto" style={{ borderColor: "var(--card-border)" }}>
                                                 <div className="flex gap-2">
                                                     <Link href={`/jobseeker/resumes/${resume.id}`} className="flex-1">
-                                                        <Button variant="outline" size="sm" className="w-full hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                                                            <Eye className="h-4 w-4 mr-2" />
-                                                            Просмотр
-                                                        </Button>
+                                                        <button className="btn-secondary w-full text-xs py-2 flex items-center justify-center gap-1.5">
+                                                            <Eye className="h-3.5 w-3.5" /> Просмотр
+                                                        </button>
                                                     </Link>
                                                     <Link href={`/jobseeker/resumes/${resume.id}/edit`} className="flex-1">
-                                                        <Button variant="outline" size="sm" className="w-full hover:bg-green-50 dark:hover:bg-green-900/20">
-                                                            <Edit className="h-4 w-4 mr-2" />
-                                                            Редактировать
-                                                        </Button>
+                                                        <button className="btn-secondary w-full text-xs py-2 flex items-center justify-center gap-1.5">
+                                                            <Edit className="h-3.5 w-3.5" /> Изменить
+                                                        </button>
                                                     </Link>
                                                 </div>
                                                 <div className="flex gap-2">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleTogglePublish(resume)}
-                                                        className="flex-1 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                                                    >
-                                                        {resume.isPublished ? 'Снять с публикации' : 'Опубликовать'}
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleDelete(resume.id)}
-                                                        className="hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                    >
-                                                        <Trash2 className="h-4 w-4 text-red-600" />
-                                                    </Button>
+                                                    <button onClick={() => handleTogglePublish(resume)}
+                                                        className={`flex-1 text-xs py-2 rounded-xl font-semibold transition-all ${
+                                                            resume.isPublished
+                                                                ? "bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
+                                                                : "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20"
+                                                        }`}>
+                                                        <Globe className="w-3.5 h-3.5 inline mr-1.5" />
+                                                        {resume.isPublished ? "Снять" : "Опубликовать"}
+                                                    </button>
+                                                    <button onClick={() => handleDelete(resume.id)}
+                                                        className="p-2 rounded-xl transition-all hover:text-red-400 hover:bg-red-500/10"
+                                                        style={{ color: "rgb(var(--text-3))" }}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        ))}
-                    </div>
-                ) : (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
-                        <Card className="shadow-xl bg-white dark:bg-gray-800">
-                            <CardContent className="p-12 text-center">
-                                <FileText className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                                    Пока нет резюме
-                                </h3>
-                                <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 mb-6">
-                                    Создайте свое первое резюме, чтобы начать откликаться на вакансии
-                                </p>
-                                <Link href="/jobseeker/resumes/create">
-                                    <Button className="shadow-md hover:shadow-lg transition-shadow">
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Создать первое резюме
-                                    </Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    </AnimatePresence>
                 )}
             </div>
         </div>

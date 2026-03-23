@@ -5,6 +5,9 @@ import { useState, useCallback, useEffect } from 'react';
 import {
     authService, userService, vacancyService, companyService,
     resumeService, educationService, skillService, applicationService, searchService,
+    workExperienceService, statsService, chatService, adminService,
+    favoriteService, alertService, reviewService, salaryService,
+    suggestService, vacancyBulkService,
 } from '@/services/api';
 import { tokenService } from '@/lib/tokenService';
 
@@ -36,6 +39,8 @@ export default function TestPage() {
         userId: '1', vacancyId: '1', companyId: '1', resumeId: '1',
         educationId: '1', skillId: '1', applicationId: '1', employerId: '1',
         searchQuery: 'developer', skillName: 'TestSkill',
+        workExperienceId: '1', conversationId: '1', alertId: '1',
+        reviewId: '1', salaryTitle: 'Developer',
     });
 
     const [token, setToken] = useState<string | null>(null);
@@ -75,7 +80,7 @@ export default function TestPage() {
         const updateStep = (step: string, update: Partial<CycleStep>) =>
             setCycleLog(prev => prev.map(s => s.step === step ? { ...s, ...update } : s));
 
-        const doStep = async <T>(name: string, fn: () => Promise<T>): Promise<T> => {
+        const doStep = async <T,>(name: string, fn: () => Promise<T>): Promise<T> => {
             addStep(name);
             const t0 = Date.now();
             try {
@@ -364,35 +369,187 @@ export default function TestPage() {
                 jsApi.get('/api/applications/my').then(r => r.data)
             );
 
-            // ── Phase 11: Cleanup ────────────────────────────────────────────
-            await doStep('47. [JOBSEEKER] Withdraw application', () =>
+            // ── Phase 11: Work Experience ────────────────────────────────
+            const workExp = await doStep<{ id: number }>('47. [JOBSEEKER] Add work experience', () =>
+                jsApi.post('/api/work-experience', {
+                    resumeId: resume.id,
+                    companyName: 'Previous Corp',
+                    position: 'Junior Developer',
+                    description: 'Worked on backend services',
+                    startYear: 2019,
+                    endYear: 2022,
+                }).then(r => r.data)
+            );
+            await doStep('48. [JOBSEEKER] Get work experience by resume', () =>
+                jsApi.get(`/api/work-experience/resume/${resume.id}`).then(r => r.data)
+            );
+            await doStep('49. [JOBSEEKER] Update work experience', () =>
+                jsApi.put(`/api/work-experience/${workExp.id}`, {
+                    resumeId: resume.id,
+                    companyName: 'Previous Corp',
+                    position: 'Middle Developer',
+                    description: 'Led backend services team',
+                    startYear: 2019,
+                    endYear: 2022,
+                }).then(r => r.data)
+            );
+
+            // ── Phase 12: Favorites ──────────────────────────────────────
+            await doStep('50. [JOBSEEKER] Add vacancy to favorites', () =>
+                jsApi.post('/api/favorites', { itemId: vacancy.id, itemType: 'VACANCY' }).then(r => r.data)
+            );
+            await doStep('51. [JOBSEEKER] Get favorite vacancies', () =>
+                jsApi.get('/api/favorites', { params: { itemType: 'VACANCY' } }).then(r => r.data)
+            );
+            await doStep('52. [JOBSEEKER] Check is favorite', () =>
+                jsApi.get('/api/favorites/check', { params: { itemId: vacancy.id, itemType: 'VACANCY' } }).then(r => r.data)
+            );
+            await doStep('53. [EMPLOYER] Add resume to favorites', () =>
+                empApi.post('/api/favorites', { itemId: resume.id, itemType: 'RESUME' }).then(r => r.data)
+            );
+
+            // ── Phase 13: Job Alerts ─────────────────────────────────────
+            const alert = await doStep<{ id: number }>('54. [JOBSEEKER] Create job alert subscription', () =>
+                jsApi.post('/api/alerts', {
+                    keywords: 'TypeScript',
+                    location: 'Moscow',
+                    minSalary: 100000,
+                    employmentType: 'FULL_TIME',
+                }).then(r => r.data)
+            );
+            await doStep('55. [JOBSEEKER] Get my alert subscriptions', () =>
+                jsApi.get('/api/alerts').then(r => r.data)
+            );
+            await doStep('56. [JOBSEEKER] Toggle alert (disable)', () =>
+                jsApi.patch(`/api/alerts/${alert.id}/toggle`).then(r => r.data)
+            );
+
+            // ── Phase 14: Company Reviews ────────────────────────────────
+            const review = await doStep<{ id: number }>('57. [JOBSEEKER] Create company review', () =>
+                jsApi.post(`/api/reviews/company/${company.id}`, {
+                    rating: 4,
+                    title: 'Great place to work',
+                    text: 'Good team, interesting tasks, competitive salary',
+                }).then(r => r.data)
+            );
+            await doStep('58. [ALL] Get company reviews', () =>
+                jsApi.get(`/api/reviews/company/${company.id}`).then(r => r.data)
+            );
+            await doStep('59. [ALL] Get company review summary', () =>
+                jsApi.get(`/api/reviews/company/${company.id}/summary`).then(r => r.data)
+            );
+
+            // ── Phase 15: Salary Analytics ───────────────────────────────
+            await doStep('60. [ALL] Get salary stats for TypeScript', () =>
+                jsApi.get('/api/stats/salary', { params: { title: 'TypeScript', location: 'Moscow' } }).then(r => r.data)
+            );
+
+            // ── Phase 16: Search Autocomplete ────────────────────────────
+            await doStep('61. [ALL] Autocomplete vacancies (q=Type)', () =>
+                jsApi.get('/api/search/suggest', { params: { q: 'Type', type: 'vacancy' } }).then(r => r.data)
+            );
+            await doStep('62. [ALL] Autocomplete skills (q=Type)', () =>
+                jsApi.get('/api/search/suggest', { params: { q: 'Type', type: 'skill' } }).then(r => r.data)
+            );
+            await doStep('63. [ALL] Autocomplete locations (q=Mos)', () =>
+                jsApi.get('/api/search/suggest', { params: { q: 'Mos', type: 'location' } }).then(r => r.data)
+            );
+
+            // ── Phase 17: Chat ───────────────────────────────────────────
+            const conversation = await doStep<{ id: number }>('64. [JOBSEEKER] Start chat with employer', () =>
+                jsApi.post('/api/chat/conversations', null, { params: { recipientId: empUserId } }).then(r => r.data)
+            );
+            await doStep('65. [JOBSEEKER] Send message', () =>
+                jsApi.post(`/api/chat/conversations/${conversation.id}/messages`, {
+                    content: 'Hello! I am interested in the TypeScript Developer position.',
+                }).then(r => r.data)
+            );
+            await doStep('66. [EMPLOYER] Get conversations', () =>
+                empApi.get('/api/chat/conversations').then(r => r.data)
+            );
+            await doStep('67. [EMPLOYER] Get messages in conversation', () =>
+                empApi.get(`/api/chat/conversations/${conversation.id}/messages`).then(r => r.data)
+            );
+            await doStep('68. [EMPLOYER] Mark conversation as read', () =>
+                empApi.patch(`/api/chat/conversations/${conversation.id}/read`).then(r => r.data)
+            );
+
+            // ── Phase 18: Stats ──────────────────────────────────────────
+            await doStep('69. [EMPLOYER] Get employer dashboard stats', () =>
+                empApi.get('/api/stats/employer').then(r => r.data)
+            );
+            await doStep('70. [EMPLOYER] Get vacancy stats', () =>
+                empApi.get(`/api/stats/vacancies/${vacancy.id}`).then(r => r.data)
+            );
+            await doStep('71. [JOBSEEKER] Get resume stats', () =>
+                jsApi.get(`/api/stats/resumes/${resume.id}`).then(r => r.data)
+            );
+
+            // ── Phase 19: Bulk Vacancy ───────────────────────────────────
+            const vacancy2 = await doStep<{ id: number }>('72. [EMPLOYER] Create second vacancy for bulk test', () =>
+                empApi.post('/api/vacancies', {
+                    title: 'React Developer',
+                    description: 'Looking for React developer',
+                    companyName: `TechCorp_${suffix}`,
+                    employerId: empUserId,
+                    salary: 200000,
+                    isPublished: false,
+                    location: 'Moscow',
+                    employmentType: 'FULL_TIME',
+                    experienceLevel: 'MIDDLE',
+                }).then(r => r.data)
+            );
+            await doStep('73. [EMPLOYER] Bulk publish 2 vacancies', () =>
+                empApi.post('/api/vacancies/bulk-publish', [vacancy.id, vacancy2.id]).then(r => r.data)
+            );
+            await doStep('74. [EMPLOYER] Bulk unpublish 2 vacancies', () =>
+                empApi.post('/api/vacancies/bulk-unpublish', [vacancy.id, vacancy2.id]).then(r => r.data)
+            );
+
+            // ── Phase 20: Cleanup ────────────────────────────────────────
+            await doStep('75. [JOBSEEKER] Withdraw application', () =>
                 jsApi.patch(`/api/applications/${application.id}/withdraw`).then(r => r.data)
             );
-            await doStep('48. [EMPLOYER] Unpublish vacancy', () =>
+            await doStep('76. [JOBSEEKER] Remove favorite vacancy', () =>
+                jsApi.delete('/api/favorites', { params: { itemId: vacancy.id, itemType: 'VACANCY' } }).then(r => r.data)
+            );
+            await doStep('77. [JOBSEEKER] Delete job alert', () =>
+                jsApi.delete(`/api/alerts/${alert.id}`).then(r => r.data)
+            );
+            await doStep('78. [JOBSEEKER] Delete review', () =>
+                jsApi.delete(`/api/reviews/${review.id}`).then(r => r.data)
+            );
+            await doStep('79. [EMPLOYER] Unpublish vacancy', () =>
                 empApi.patch(`/api/vacancies/${vacancy.id}/unpublish`).then(r => r.data)
             );
-            await doStep('49. [JOBSEEKER] Unpublish resume', () =>
+            await doStep('80. [JOBSEEKER] Unpublish resume', () =>
                 jsApi.patch(`/api/resumes/${resume.id}/unpublish`).then(r => r.data)
             );
-            await doStep('50. [JOBSEEKER] Remove skill from resume', () =>
+            await doStep('81. [JOBSEEKER] Delete work experience', () =>
+                jsApi.delete(`/api/work-experience/${workExp.id}`).then(r => r.data)
+            );
+            await doStep('82. [JOBSEEKER] Remove skill from resume', () =>
                 jsApi.delete(`/api/resumes/${resume.id}/skills/${skill.id}`).then(r => r.data)
             );
-            await doStep('51. [JOBSEEKER] Delete education', () =>
+            await doStep('83. [JOBSEEKER] Delete education', () =>
                 jsApi.delete(`/api/educations/${education.id}`).then(r => r.data)
             );
-            await doStep('52. [JOBSEEKER] Delete resume', () =>
+            await doStep('84. [JOBSEEKER] Delete resume', () =>
                 jsApi.delete(`/api/resumes/${resume.id}`).then(r => r.data)
             );
-            await doStep('53. [EMPLOYER] Remove skill from vacancy', () =>
+            await doStep('85. [EMPLOYER] Remove skill from vacancy', () =>
                 empApi.delete(`/api/vacancies/${vacancy.id}/skills/${skill.id}`).then(r => r.data)
             );
-            await doStep('54. [EMPLOYER] Delete vacancy', () =>
+            await doStep('86. [EMPLOYER] Delete vacancy', () =>
                 empApi.delete(`/api/vacancies/${vacancy.id}`).then(r => r.data)
             );
-            await doStep('55. [EMPLOYER] Delete company', () =>
+            await doStep('87. [EMPLOYER] Delete second vacancy', () =>
+                empApi.delete(`/api/vacancies/${vacancy2.id}`).then(r => r.data)
+            );
+            await doStep('88. [EMPLOYER] Delete company', () =>
                 empApi.delete(`/api/companies/${company.id}`).then(r => r.data)
             );
-            await doStep('56. [SKILL] Delete skill', () =>
+            await doStep('89. [SKILL] Delete skill', () =>
                 empApi.delete(`/api/skills/${skill.id}`).then(r => r.data)
             );
         } catch {
@@ -415,13 +572,26 @@ export default function TestPage() {
             ['resume.getById', () => resumeService.getById(n('resumeId'))],
             ['resume.getMy', () => resumeService.getMy()],
             ['education.getByResume', () => educationService.getByResume(n('resumeId'))],
+            ['workExperience.getByResume', () => workExperienceService.getByResume(n('resumeId'))],
             ['skill.getAll', () => skillService.getAll()],
             ['skill.getById', () => skillService.getById(n('skillId'))],
             ['application.getMy', () => applicationService.getMy()],
             ['application.getByVacancy', () => applicationService.getByVacancy(n('vacancyId'))],
             ['search.vacancies', () => searchService.searchVacancies({ query: cfg.searchQuery })],
             ['search.resumes', () => searchService.searchResumes({ query: cfg.searchQuery })],
+            ['search.suggest', () => suggestService.suggest(cfg.searchQuery, 'vacancy').then(r => r.data)],
             ['user.getProfile', () => userService.getProfile(n('userId'))],
+            ['stats.vacancyStats', () => statsService.getVacancyStats(n('vacancyId'))],
+            ['stats.resumeStats', () => statsService.getResumeStats(n('resumeId'))],
+            ['stats.employerDashboard', () => statsService.getEmployerDashboard()],
+            ['salary.getStats', () => salaryService.getStats({ title: cfg.salaryTitle }).then(r => r.data)],
+            ['alerts.getMy', () => alertService.getMySubscriptions().then(r => r.data)],
+            ['reviews.getByCompany', () => reviewService.getByCompany(n('companyId')).then(r => r.data)],
+            ['reviews.getSummary', () => reviewService.getSummary(n('companyId')).then(r => r.data)],
+            ['chat.getConversations', () => chatService.getConversations()],
+            ['favorites.getVacancies', () => favoriteService.getByType('VACANCY')],
+            ['favorites.getResumes', () => favoriteService.getByType('RESUME')],
+            ['admin.getUsers', () => adminService.getUsers()],
         ];
         for (const [id, fn] of reads) await run(id, fn);
     };
@@ -635,6 +805,141 @@ export default function TestPage() {
                         onRun={() => run('search.vacancies', () => searchService.searchVacancies({ query: cfg.searchQuery, size: 5 }))} />
                     <Row id="search.resumes" label={`searchResumes(query="${cfg.searchQuery}")`} results={results}
                         onRun={() => run('search.resumes', () => searchService.searchResumes({ query: cfg.searchQuery, size: 5 }))} />
+                    <Row id="search.suggest" label={`suggest(q="${cfg.searchQuery}", type="vacancy")`} results={results}
+                        onRun={() => run('search.suggest', () => suggestService.suggest(cfg.searchQuery, 'vacancy').then(r => r.data))} />
+                    <Row id="search.suggestSkill" label={`suggest(q="${cfg.searchQuery}", type="skill")`} results={results}
+                        onRun={() => run('search.suggestSkill', () => suggestService.suggest(cfg.searchQuery, 'skill').then(r => r.data))} />
+                    <Row id="search.suggestLocation" label={`suggest(q="${cfg.searchQuery}", type="location")`} results={results}
+                        onRun={() => run('search.suggestLocation', () => suggestService.suggest(cfg.searchQuery, 'location').then(r => r.data))} />
+                    <Row id="search.suggestCompany" label={`suggest(q="${cfg.searchQuery}", type="company")`} results={results}
+                        onRun={() => run('search.suggestCompany', () => suggestService.suggest(cfg.searchQuery, 'company').then(r => r.data))} />
+                </Section>
+
+                {/* WORK EXPERIENCE */}
+                <Section title="WORK EXPERIENCE">
+                    <Row id="workExp.getByResume" label={`getByResume(resumeId=${cfg.resumeId})`} results={results}
+                        onRun={() => run('workExp.getByResume', () => workExperienceService.getByResume(n('resumeId')))} />
+                    <Row id="workExp.create" label={`create({resumeId, companyName, position, ...})`} results={results} destructive
+                        onRun={() => run('workExp.create', () => workExperienceService.create({
+                            resumeId: n('resumeId'),
+                            companyName: 'Test Corp',
+                            position: 'Developer',
+                            description: 'Worked on various projects',
+                            startYear: 2020,
+                            endYear: 2023,
+                        }))} />
+                    <Row id="workExp.update" label={`update(workExperienceId=${cfg.workExperienceId})`} results={results} destructive
+                        onRun={() => run('workExp.update', () => workExperienceService.update(n('workExperienceId'), {
+                            resumeId: n('resumeId'),
+                            companyName: 'Test Corp',
+                            position: 'Senior Developer',
+                            description: 'Led projects',
+                            startYear: 2020,
+                            endYear: 2023,
+                        }))} />
+                    <Row id="workExp.delete" label={`delete(workExperienceId=${cfg.workExperienceId})`} results={results} destructive danger
+                        onRun={() => run('workExp.delete', () => workExperienceService.delete(n('workExperienceId')))} />
+                </Section>
+
+                {/* STATS */}
+                <Section title="STATS">
+                    <Row id="stats.employerDashboard" label="getEmployerDashboard()" results={results}
+                        onRun={() => run('stats.employerDashboard', () => statsService.getEmployerDashboard())} />
+                    <Row id="stats.vacancyStats" label={`getVacancyStats(vacancyId=${cfg.vacancyId})`} results={results}
+                        onRun={() => run('stats.vacancyStats', () => statsService.getVacancyStats(n('vacancyId')))} />
+                    <Row id="stats.resumeStats" label={`getResumeStats(resumeId=${cfg.resumeId})`} results={results}
+                        onRun={() => run('stats.resumeStats', () => statsService.getResumeStats(n('resumeId')))} />
+                    <Row id="salary.getStats" label={`getSalaryStats(title="${cfg.salaryTitle}")`} results={results}
+                        onRun={() => run('salary.getStats', () => salaryService.getStats({ title: cfg.salaryTitle }).then(r => r.data))} />
+                </Section>
+
+                {/* CHAT */}
+                <Section title="CHAT">
+                    <Row id="chat.getConversations" label="getConversations()" results={results}
+                        onRun={() => run('chat.getConversations', () => chatService.getConversations())} />
+                    <Row id="chat.getOrCreate" label={`getOrCreate(recipientId=${cfg.userId})`} results={results} destructive
+                        onRun={() => run('chat.getOrCreate', () => chatService.getOrCreate(n('userId')))} />
+                    <Row id="chat.getConversation" label={`getConversation(id=${cfg.conversationId})`} results={results}
+                        onRun={() => run('chat.getConversation', () => chatService.getConversation(n('conversationId')))} />
+                    <Row id="chat.getMessages" label={`getMessages(conversationId=${cfg.conversationId})`} results={results}
+                        onRun={() => run('chat.getMessages', () => chatService.getMessages(n('conversationId')))} />
+                    <Row id="chat.sendMessage" label={`sendMessage(conversationId=${cfg.conversationId}, "Hello!")`} results={results} destructive
+                        onRun={() => run('chat.sendMessage', () => chatService.sendMessage(n('conversationId'), 'Hello from test panel!'))} />
+                    <Row id="chat.markRead" label={`markRead(conversationId=${cfg.conversationId})`} results={results} destructive
+                        onRun={() => run('chat.markRead', () => chatService.markRead(n('conversationId')))} />
+                </Section>
+
+                {/* FAVORITES */}
+                <Section title="FAVORITES">
+                    <Row id="favorites.getVacancies" label='getByType("VACANCY")' results={results}
+                        onRun={() => run('favorites.getVacancies', () => favoriteService.getByType('VACANCY'))} />
+                    <Row id="favorites.getResumes" label='getByType("RESUME")' results={results}
+                        onRun={() => run('favorites.getResumes', () => favoriteService.getByType('RESUME'))} />
+                    <Row id="favorites.checkVacancy" label={`isFavorite(vacancyId=${cfg.vacancyId}, "VACANCY")`} results={results}
+                        onRun={() => run('favorites.checkVacancy', () => favoriteService.isFavorite(n('vacancyId'), 'VACANCY'))} />
+                    <Row id="favorites.addVacancy" label={`add(vacancyId=${cfg.vacancyId}, "VACANCY")`} results={results} destructive
+                        onRun={() => run('favorites.addVacancy', () => favoriteService.add(n('vacancyId'), 'VACANCY'))} />
+                    <Row id="favorites.removeVacancy" label={`remove(vacancyId=${cfg.vacancyId}, "VACANCY")`} results={results} destructive danger
+                        onRun={() => run('favorites.removeVacancy', () => favoriteService.remove(n('vacancyId'), 'VACANCY'))} />
+                </Section>
+
+                {/* ALERTS */}
+                <Section title="JOB ALERTS">
+                    <Row id="alerts.getMy" label="getMySubscriptions()" results={results}
+                        onRun={() => run('alerts.getMy', () => alertService.getMySubscriptions().then(r => r.data))} />
+                    <Row id="alerts.create" label='create({keywords:"developer", location:"Moscow", minSalary:100000})' results={results} destructive
+                        onRun={() => run('alerts.create', () => alertService.create({
+                            keywords: 'developer',
+                            location: 'Moscow',
+                            minSalary: 100000,
+                            employmentType: 'FULL_TIME',
+                        }).then(r => r.data))} />
+                    <Row id="alerts.toggle" label={`toggle(alertId=${cfg.alertId})`} results={results} destructive
+                        onRun={() => run('alerts.toggle', () => alertService.toggle(n('alertId')).then(r => r.data))} />
+                    <Row id="alerts.delete" label={`delete(alertId=${cfg.alertId})`} results={results} destructive danger
+                        onRun={() => run('alerts.delete', () => alertService.delete(n('alertId')).then(r => r.data))} />
+                </Section>
+
+                {/* REVIEWS */}
+                <Section title="COMPANY REVIEWS">
+                    <Row id="reviews.getByCompany" label={`getByCompany(companyId=${cfg.companyId})`} results={results}
+                        onRun={() => run('reviews.getByCompany', () => reviewService.getByCompany(n('companyId')).then(r => r.data))} />
+                    <Row id="reviews.getSummary" label={`getSummary(companyId=${cfg.companyId})`} results={results}
+                        onRun={() => run('reviews.getSummary', () => reviewService.getSummary(n('companyId')).then(r => r.data))} />
+                    <Row id="reviews.create" label={`create(companyId=${cfg.companyId}, {rating:5, title, text})`} results={results} destructive
+                        onRun={() => run('reviews.create', () => reviewService.create(n('companyId'), {
+                            rating: 5,
+                            title: 'Great company',
+                            text: 'Excellent work environment and culture',
+                        }).then(r => r.data))} />
+                    <Row id="reviews.update" label={`update(reviewId=${cfg.reviewId}, {rating:4, ...})`} results={results} destructive
+                        onRun={() => run('reviews.update', () => reviewService.update(n('reviewId'), {
+                            rating: 4,
+                            title: 'Good company',
+                            text: 'Good work environment',
+                        }).then(r => r.data))} />
+                    <Row id="reviews.delete" label={`delete(reviewId=${cfg.reviewId})`} results={results} destructive danger
+                        onRun={() => run('reviews.delete', () => reviewService.delete(n('reviewId')).then(r => r.data))} />
+                </Section>
+
+                {/* BULK VACANCY */}
+                <Section title="BULK VACANCY">
+                    <Row id="bulk.publish" label={`bulkPublish([${cfg.vacancyId}])`} results={results} destructive
+                        onRun={() => run('bulk.publish', () => vacancyBulkService.bulkPublish([n('vacancyId')]).then(r => r.data))} />
+                    <Row id="bulk.unpublish" label={`bulkUnpublish([${cfg.vacancyId}])`} results={results} destructive
+                        onRun={() => run('bulk.unpublish', () => vacancyBulkService.bulkUnpublish([n('vacancyId')]).then(r => r.data))} />
+                </Section>
+
+                {/* ADMIN */}
+                <Section title="ADMIN">
+                    <Row id="admin.getUsers" label="getUsers(page=0, size=20)" results={results}
+                        onRun={() => run('admin.getUsers', () => adminService.getUsers())} />
+                    <Row id="admin.deactivateUser" label={`deactivateUser(userId=${cfg.userId})`} results={results} destructive danger
+                        onRun={() => run('admin.deactivateUser', () => adminService.deactivateUser(n('userId')))} />
+                    <Row id="admin.activateUser" label={`activateUser(userId=${cfg.userId})`} results={results} destructive
+                        onRun={() => run('admin.activateUser', () => adminService.activateUser(n('userId')))} />
+                    <Row id="admin.deleteUser" label={`deleteUser(userId=${cfg.userId})`} results={results} destructive danger
+                        onRun={() => run('admin.deleteUser', () => adminService.deleteUser(n('userId')))} />
                 </Section>
 
                 {/* Summary */}

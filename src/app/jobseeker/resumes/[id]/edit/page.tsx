@@ -13,7 +13,7 @@ import Card, { CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { resumeService, educationService, skillService } from "@/services/api";
 import type { ResumeDto, EducationDto, SkillDto } from "@/types";
 import { handleApiError } from "@/lib/apiClient";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 type FormData = {
     title: string;
@@ -135,14 +135,14 @@ export default function EditResumePage() {
 
     if (loading || isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            <div className="min-h-screen flex items-center justify-center" style={{ background: "rgb(var(--bg))" }}>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8">
+        <div className="min-h-screen py-8" style={{ background: "rgb(var(--bg))", color: "rgb(var(--text-1))" }}>
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -162,15 +162,15 @@ export default function EditResumePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                 >
-                    <Card className="shadow-xl bg-white dark:bg-gray-800">
-                        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-700">
+                    <Card className="glass-card">
+                        <CardHeader className="bg-white/5">
                             <CardTitle>Редактировать резюме</CardTitle>
                             <CardDescription>Обновите информацию в вашем резюме</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Основная информация</h3>
+                                    <h3 className="text-lg font-semibold text-[rgb(var(--text-1))]">Основная информация</h3>
 
                                     <Input
                                         label="Название резюме"
@@ -184,12 +184,13 @@ export default function EditResumePage() {
                                     />
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label className="block text-sm font-medium mb-1" style={{ color: "rgb(var(--text-2))" }}>
                                             Профессиональное резюме
                                         </label>
                                         <textarea
                                             rows={5}
-                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="w-full px-4 py-2 rounded-lg outline-none transition-all"
+                                        style={{ background: "rgb(var(--card-bg))", border: "1px solid var(--card-border)", color: "rgb(var(--text-1))" }}
                                             placeholder="Краткий обзор вашего опыта..."
                                             {...register("summary")}
                                         />
@@ -213,14 +214,14 @@ export default function EditResumePage() {
                                         {...register("contactPhone")}
                                     />
 
-                                    <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                    <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.15)" }}>
                                         <input
                                             type="checkbox"
                                             id="isPublished"
-                                            className="w-5 h-5 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
+                                            className="w-5 h-5 accent-indigo-500 rounded"
                                             {...register("isPublished")}
                                         />
-                                        <label htmlFor="isPublished" className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer">
+                                        <label htmlFor="isPublished" className="text-sm font-medium cursor-pointer" style={{ color: "rgb(var(--text-1))" }}>
                                             Опубликовать резюме (работодатели смогут его увидеть)
                                         </label>
                                     </div>
@@ -228,7 +229,7 @@ export default function EditResumePage() {
 
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Образование</h3>
+                                        <h3 className="text-lg font-semibold text-[rgb(var(--text-1))]">Образование</h3>
                                         <Button
                                             type="button"
                                             variant="outline"
@@ -250,7 +251,7 @@ export default function EditResumePage() {
                                         <Card key={field.id} className="border-2">
                                             <CardContent className="p-4 space-y-4">
                                                 <div className="flex justify-between items-center">
-                                                    <h4 className="font-medium text-gray-900 dark:text-white">Образование {index + 1}</h4>
+                                                    <h4 className="font-medium text-[rgb(var(--text-1))]">Образование {index + 1}</h4>
                                                     {educationFields.length > 1 && (
                                                         <Button
                                                             type="button"
@@ -294,7 +295,7 @@ export default function EditResumePage() {
 
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Навыки</h3>
+                                        <h3 className="text-lg font-semibold text-[rgb(var(--text-1))]">Навыки</h3>
                                         <Button
                                             type="button"
                                             variant="outline"

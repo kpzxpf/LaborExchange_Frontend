@@ -6,7 +6,10 @@ import {
     ApplicationRequestDto, ApplicationResponseDto, ApplicationStatisticsDto,
     VacancySearchRequest, VacancySearchResponse,
     ResumeSearchRequest, ResumeSearchResponse,
-    SearchPageResponse, PageResponse
+    SearchPageResponse, PageResponse,
+    AiResumeRequestDto, AiResumeResponseDto,
+    WorkExperienceDto,
+    VacancyStatsDto, EmployerDashboardDto, ResumeStatsDto,
 } from '@/types';
 
 const api = axios.create({
@@ -37,6 +40,12 @@ export const authService = {
         api.post<AuthResponse>('/api/auth/login', data).then(r => r.data),
     register: (data: RegisterRequest) =>
         api.post<AuthResponse>('/api/auth/register', data).then(r => r.data),
+    forgotPassword: (email: string) =>
+        api.post('/api/auth/forgot-password', { email }),
+    resetPassword: (token: string, newPassword: string) =>
+        api.post('/api/auth/reset-password', { token, newPassword }),
+    verifyEmail: (token: string) =>
+        api.get('/api/auth/verify-email', { params: { token } }),
 };
 
 // ======================== USER ========================
@@ -44,6 +53,8 @@ export const userService = {
     getProfile: (id: number) => api.get<UserDto>(`/api/users/${id}/profile`).then(r => r.data),
     update: (id: number, data: Partial<UserDto>) =>
         api.put<UserDto>(`/api/users/${id}`, data).then(r => r.data),
+    changePassword: (id: number, data: { oldPassword: string; newPassword: string }) =>
+        api.put(`/api/users/${id}/password`, data),
 };
 
 // ======================== VACANCY ========================
@@ -107,6 +118,28 @@ export const resumeService = {
         api.delete(`/api/resumes/${resumeId}/skills/${skillId}`),
     setSkills: (resumeId: number, skillIds: number[]) =>
         api.put(`/api/resumes/${resumeId}/skills`, skillIds),
+    generateWithAi: (data: AiResumeRequestDto): Promise<AiResumeResponseDto> =>
+        api.post<AiResumeResponseDto>('/api/resumes/ai/generate', data).then(r => r.data),
+    exportPdf: async (id: number): Promise<void> => {
+        const response = await api.get(`/api/resumes/${id}/export/pdf`, { responseType: 'blob' });
+        const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `resume-${id}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+    },
+};
+
+// ======================== WORK EXPERIENCE ========================
+export const workExperienceService = {
+    getByResume: (resumeId: number) =>
+        api.get<WorkExperienceDto[]>(`/api/work-experience/resume/${resumeId}`).then(r => r.data),
+    create: (data: WorkExperienceDto): Promise<WorkExperienceDto> =>
+        api.post<WorkExperienceDto>('/api/work-experience', data).then(r => r.data),
+    update: (id: number, data: WorkExperienceDto): Promise<WorkExperienceDto> =>
+        api.put<WorkExperienceDto>(`/api/work-experience/${id}`, data).then(r => r.data),
+    delete: (id: number) => api.delete(`/api/work-experience/${id}`),
 };
 
 // ======================== EDUCATION ========================
@@ -177,11 +210,186 @@ export const applicationService = {
 };
 
 // ======================== SEARCH ========================
+function buildSearchParams(params: Record<string, unknown>): URLSearchParams {
+    const sp = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+        if (value == null || value === '') return;
+        if (Array.isArray(value)) {
+            value.forEach(v => sp.append(key, String(v)));
+        } else {
+            sp.set(key, String(value));
+        }
+    });
+    return sp;
+}
+
 export const searchService = {
     searchVacancies: (params: VacancySearchRequest): Promise<SearchPageResponse<VacancySearchResponse>> =>
-        api.get('/api/search/vacancies', { params }).then(r => r.data),
+        api.get('/api/search/vacancies', { params: buildSearchParams(params as Record<string, unknown>) }).then(r => r.data),
     searchResumes: (params: ResumeSearchRequest): Promise<SearchPageResponse<ResumeSearchResponse>> =>
-        api.get('/api/search/resumes', { params }).then(r => r.data),
+        api.get('/api/search/resumes', { params: buildSearchParams(params as Record<string, unknown>) }).then(r => r.data),
+    getRecommendations: (skills: string[], location?: string, salaryMin?: number, page = 0, size = 10): Promise<SearchPageResponse<VacancySearchResponse>> => {
+        const params = new URLSearchParams();
+        skills.forEach(s => params.append('skills', s));
+        if (location) params.set('location', location);
+        if (salaryMin != null) params.set('salaryMin', String(salaryMin));
+        params.set('page', String(page));
+        params.set('size', String(size));
+        return api.get('/api/search/vacancies/recommendations', { params }).then(r => r.data);
+    },
+};
+
+// ======================== STATS ========================
+export const statsService = {
+    getEmployerDashboard: (): Promise<EmployerDashboardDto> =>
+        api.get<EmployerDashboardDto>('/api/stats/employer').then(r => r.data),
+    getVacancyStats: (vacancyId: number): Promise<VacancyStatsDto> =>
+        api.get<VacancyStatsDto>(`/api/stats/vacancies/${vacancyId}`).then(r => r.data),
+    getResumeStats: (resumeId: number): Promise<ResumeStatsDto> =>
+        api.get<ResumeStatsDto>(`/api/stats/resumes/${resumeId}`).then(r => r.data),
+};
+
+// ======================== CHAT ========================
+export interface MessageDto {
+    id: number;
+    conversationId: number;
+    senderId: number;
+    content: string;
+    createdAt: string;
+    read: boolean;
+}
+
+export interface ConversationDto {
+    id: number;
+    user1Id: number;
+    user2Id: number;
+    otherUserId: number;
+    createdAt: string;
+    lastMessage?: MessageDto;
+    unreadCount: number;
+}
+
+export const chatService = {
+    getConversations: (): Promise<ConversationDto[]> =>
+        api.get<ConversationDto[]>('/api/chat/conversations').then(r => r.data),
+    getOrCreate: (recipientId: number): Promise<ConversationDto> =>
+        api.post<ConversationDto>('/api/chat/conversations', null, { params: { recipientId } }).then(r => r.data),
+    getConversation: (id: number): Promise<ConversationDto> =>
+        api.get<ConversationDto>(`/api/chat/conversations/${id}`).then(r => r.data),
+    getMessages: (conversationId: number, page = 0, size = 30): Promise<PageResponse<MessageDto>> =>
+        api.get<PageResponse<MessageDto>>(`/api/chat/conversations/${conversationId}/messages`, { params: { page, size } }).then(r => r.data),
+    sendMessage: (conversationId: number, content: string): Promise<MessageDto> =>
+        api.post<MessageDto>(`/api/chat/conversations/${conversationId}/messages`, { content }).then(r => r.data),
+    markRead: (conversationId: number) =>
+        api.patch(`/api/chat/conversations/${conversationId}/read`),
+};
+
+// ======================== ADMIN ========================
+export interface AdminUserDto {
+    id: number;
+    username: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+    roleName: string;
+    emailVerified: boolean;
+    active: boolean;
+    createdAt: string;
+}
+
+export const adminService = {
+    getUsers: (page = 0, size = 20): Promise<PageResponse<AdminUserDto>> =>
+        api.get<PageResponse<AdminUserDto>>('/api/admin/users', { params: { page, size } }).then(r => r.data),
+    deactivateUser: (userId: number) =>
+        api.patch(`/api/admin/users/${userId}/deactivate`),
+    activateUser: (userId: number) =>
+        api.patch(`/api/admin/users/${userId}/activate`),
+    deleteUser: (userId: number) =>
+        api.delete(`/api/admin/users/${userId}`),
+};
+
+// ======================== FAVORITES ========================
+export type FavoriteItemType = 'VACANCY' | 'RESUME';
+
+export interface FavoriteDto {
+    id: number;
+    userId: number;
+    itemId: number;
+    itemType: FavoriteItemType;
+    createdAt: string;
+}
+
+export const favoriteService = {
+    add: (itemId: number, itemType: FavoriteItemType): Promise<FavoriteDto> =>
+        api.post<FavoriteDto>('/api/favorites', { itemId, itemType }).then(r => r.data),
+    remove: (itemId: number, itemType: FavoriteItemType) =>
+        api.delete('/api/favorites', { params: { itemId, itemType } }),
+    getByType: (itemType: FavoriteItemType): Promise<FavoriteDto[]> =>
+        api.get<FavoriteDto[]>('/api/favorites', { params: { itemType } }).then(r => r.data),
+    isFavorite: (itemId: number, itemType: FavoriteItemType): Promise<boolean> =>
+        api.get<boolean>('/api/favorites/check', { params: { itemId, itemType } }).then(r => r.data),
+};
+
+// ======================== ALERT SUBSCRIPTIONS ========================
+export const alertService = {
+  getMySubscriptions: () =>
+    api.get('/api/alerts'),
+
+  create: (data: {
+    keywords?: string;
+    location?: string;
+    minSalary?: number;
+    maxSalary?: number;
+    employmentType?: string;
+    workFormat?: string;
+    skillIds?: number[];
+  }) => api.post('/api/alerts', data),
+
+  toggle: (id: number) =>
+    api.patch(`/api/alerts/${id}/toggle`),
+
+  delete: (id: number) =>
+    api.delete(`/api/alerts/${id}`),
+};
+
+// ======================== COMPANY REVIEWS ========================
+export const reviewService = {
+  getByCompany: (companyId: number, page = 0, size = 10) =>
+    api.get(`/api/reviews/company/${companyId}`, { params: { page, size } }),
+
+  getSummary: (companyId: number) =>
+    api.get(`/api/reviews/company/${companyId}/summary`),
+
+  create: (companyId: number, data: { rating: number; title: string; text: string }) =>
+    api.post(`/api/reviews/company/${companyId}`, data),
+
+  update: (reviewId: number, data: { rating: number; title: string; text: string }) =>
+    api.put(`/api/reviews/${reviewId}`, data),
+
+  delete: (reviewId: number) =>
+    api.delete(`/api/reviews/${reviewId}`),
+};
+
+// ======================== SALARY ANALYTICS ========================
+export const salaryService = {
+  getStats: (params: { title?: string; location?: string; employmentType?: string }) =>
+    api.get('/api/stats/salary', { params }),
+};
+
+// ======================== AUTOCOMPLETE SUGGESTIONS ========================
+export const suggestService = {
+  suggest: (q: string, type: 'vacancy' | 'company' | 'location' | 'skill' = 'vacancy') =>
+    api.get('/api/search/suggest', { params: { q, type } }),
+};
+
+// ======================== BULK VACANCY OPERATIONS ========================
+export const vacancyBulkService = {
+  bulkPublish: (ids: number[]) =>
+    api.post('/api/vacancies/bulk-publish', ids),
+
+  bulkUnpublish: (ids: number[]) =>
+    api.post('/api/vacancies/bulk-unpublish', ids),
 };
 
 export default api;

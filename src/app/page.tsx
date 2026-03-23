@@ -2,26 +2,30 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Briefcase, Users, TrendingUp, CheckCircle, ArrowRight, Star, Award, Shield } from "lucide-react";
-import Button from "@/components/ui/Button";
-import Card, { CardContent } from "@/components/ui/Card";
+import { Briefcase, Users, TrendingUp, CheckCircle, ArrowRight, Star, Award, Shield, Zap, Globe, Lock } from "lucide-react";
 
 export default function HomePage() {
     const features = [
         {
             icon: Briefcase,
+            color: "from-indigo-500 to-violet-500",
+            glow: "rgba(99,102,241,0.3)",
             title: "Найдите работу мечты",
-            description: "Тысячи вакансий от ведущих компаний в одном месте",
+            description: "Тысячи вакансий от ведущих компаний в одном месте. Умный поиск по навыкам.",
         },
         {
             icon: Users,
-            title: "Найдите талантливых специалистов",
-            description: "Откройте для себя квалифицированных профессионалов для вашей компании",
+            color: "from-violet-500 to-purple-500",
+            glow: "rgba(139,92,246,0.3)",
+            title: "Найдите таланты",
+            description: "Откройте для себя квалифицированных специалистов. Фильтрация по опыту и навыкам.",
         },
         {
             icon: TrendingUp,
+            color: "from-indigo-500 to-violet-600",
+            glow: "rgba(99,102,241,0.3)",
             title: "Развивайте карьеру",
-            description: "Получайте доступ к ресурсам для профессионального роста",
+            description: "Отслеживайте отклики, управляйте резюме и получайте уведомления в реальном времени.",
         },
     ];
 
@@ -34,89 +38,128 @@ export default function HomePage() {
     ];
 
     const stats = [
-        { icon: Users, value: "10,000+", label: "Активных пользователей" },
-        { icon: Briefcase, value: "5,000+", label: "Открытых вакансий" },
-        { icon: Award, value: "95%", label: "Успешных размещений" },
-        { icon: Shield, value: "100%", label: "Безопасность данных" },
+        { icon: Users, value: "10 000+", label: "Активных пользователей", color: "from-indigo-500 to-violet-500" },
+        { icon: Briefcase, value: "5 000+", label: "Открытых вакансий", color: "from-violet-500 to-purple-500" },
+        { icon: Award, value: "95%", label: "Успешных размещений", color: "from-violet-500 to-indigo-500" },
+        { icon: Shield, value: "100%", label: "Безопасность данных", color: "from-emerald-500 to-teal-500" },
+    ];
+
+    const trusted = [
+        { icon: Zap, label: "Мгновенный отклик" },
+        { icon: Globe, label: "Тысячи компаний" },
+        { icon: Lock, label: "Защита данных" },
     ];
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen" style={{ background: "rgb(var(--bg))" }}>
             {/* Hero Section */}
-            <section className="relative bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-gray-950 dark:via-background dark:to-purple-950/30 overflow-hidden">
-                <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 dark:bg-blue-900/30 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl opacity-30 animate-pulse" />
-                    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 dark:bg-purple-900/30 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl opacity-30 animate-pulse" />
-                </div>
+            <section className="relative overflow-hidden">
+                <div className="mesh-bg absolute inset-0" />
+                <div className="grid-pattern absolute inset-0" />
 
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
+                {/* Floating orbs */}
+                <div className="absolute top-20 left-1/4 w-72 h-72 rounded-full blur-3xl opacity-20 pointer-events-none"
+                    style={{ background: "radial-gradient(circle, rgb(99,102,241), transparent)" }} />
+                <div className="absolute bottom-20 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-15 pointer-events-none"
+                    style={{ background: "radial-gradient(circle, rgb(139,92,246), transparent)" }} />
+
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-36">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
+                        transition={{ duration: 0.7 }}
                         className="text-center"
                     >
+                        {/* Badge */}
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.2, duration: 0.5 }}
-                            className="inline-flex items-center px-4 py-2 mb-6 bg-blue-100 dark:bg-blue-900/40 rounded-full"
+                            transition={{ delay: 0.1, duration: 0.5 }}
+                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8 text-sm font-medium"
+                            style={{
+                                background: "rgba(99,102,241,0.12)",
+                                border: "1px solid rgba(99,102,241,0.3)",
+                                color: "var(--badge-indigo-color)",
+                            }}
                         >
-                            <Star className="h-4 w-4 text-yellow-500 mr-2" />
-                            <span className="text-sm font-medium text-foreground/70">
-                                Надежная платформа для поиска работы
-                            </span>
+                            <Star className="h-3.5 w-3.5 text-yellow-400" fill="currentColor" />
+                            Надёжная платформа для карьерного роста
                         </motion.div>
 
+                        {/* Headline */}
                         <motion.h1
-                            className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-6"
+                            className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
+                            style={{ color: "rgb(var(--text-1))", lineHeight: 1.1 }}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3, duration: 0.8 }}
+                            transition={{ delay: 0.2, duration: 0.7 }}
                         >
-                            Найдите идеальное{" "}
-                            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                совпадение
-                            </span>
+                            Ваша следующая{" "}
+                            <span className="gradient-text">карьерная</span>
                             <br />
-                            для вашей карьеры
+                            возможность — здесь
                         </motion.h1>
 
                         <motion.p
-                            className="text-xl text-foreground/60 mb-8 max-w-3xl mx-auto"
+                            className="text-lg sm:text-xl mb-10 max-w-2xl mx-auto"
+                            style={{ color: "rgb(var(--text-2))" }}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4, duration: 0.8 }}
+                            transition={{ delay: 0.3, duration: 0.7 }}
                         >
-                            Соединяем соискателей с работодателями. Развивайте карьеру или найдите идеального кандидата.
+                            Соединяем соискателей с работодателями. Находите работу мечты или нанимайте лучших специалистов быстро и удобно.
                         </motion.p>
 
+                        {/* CTAs */}
                         <motion.div
                             className="flex flex-col sm:flex-row gap-4 justify-center"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.6, duration: 0.8 }}
+                            transition={{ delay: 0.4, duration: 0.7 }}
                         >
                             <Link href="/auth/register">
-                                <Button size="lg" className="group shadow-lg hover:shadow-xl transition-shadow">
-                                    Начать работу
-                                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                </Button>
+                                <motion.button
+                                    whileHover={{ scale: 1.04, y: -1 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="btn-primary flex items-center gap-2 px-8 py-3.5 text-base font-semibold"
+                                >
+                                    Начать бесплатно
+                                    <ArrowRight className="h-5 w-5" />
+                                </motion.button>
                             </Link>
                             <Link href="/auth/login">
-                                <Button variant="outline" size="lg" className="shadow-md hover:shadow-lg transition-shadow">
+                                <motion.button
+                                    whileHover={{ scale: 1.03, y: -1 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="btn-secondary px-8 py-3.5 text-base font-semibold"
+                                >
                                     Войти в систему
-                                </Button>
+                                </motion.button>
                             </Link>
+                        </motion.div>
+
+                        {/* Trust badges */}
+                        <motion.div
+                            className="flex items-center justify-center gap-6 mt-10 flex-wrap"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.6 }}
+                        >
+                            {trusted.map((item, i) => (
+                                <div key={i} className="flex items-center gap-2 text-sm" style={{ color: "rgb(var(--text-3))" }}>
+                                    <item.icon className="h-4 w-4" style={{ color: "rgb(99,102,241)" }} />
+                                    {item.label}
+                                </div>
+                            ))}
                         </motion.div>
                     </motion.div>
                 </div>
             </section>
 
             {/* Stats Section */}
-            <section className="py-16 bg-background border-b border-border">
+            <section className="py-16 border-y" style={{ background: "rgb(var(--surface))" }}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                         {stats.map((stat, index) => (
                             <motion.div
                                 key={index}
@@ -124,13 +167,16 @@ export default function HomePage() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.1, duration: 0.5 }}
-                                className="text-center"
+                                className="card-stat text-center"
                             >
-                                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-full mb-3">
-                                    <stat.icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                                <div
+                                    className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 bg-gradient-to-br ${stat.color}`}
+                                    style={{ opacity: 0.9 }}
+                                >
+                                    <stat.icon className="h-6 w-6 text-white" />
                                 </div>
-                                <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
-                                <div className="text-sm text-foreground/60">{stat.label}</div>
+                                <div className="text-3xl font-bold mb-1 gradient-text">{stat.value}</div>
+                                <div className="text-sm" style={{ color: "rgb(var(--text-3))" }}>{stat.label}</div>
                             </motion.div>
                         ))}
                     </div>
@@ -138,91 +184,128 @@ export default function HomePage() {
             </section>
 
             {/* Features Section */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-muted/30">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8 }}
-                    className="text-center mb-16"
-                >
-                    <h2 className="text-4xl font-bold text-foreground mb-4">
-                        Почему выбирают LaborExchange?
-                    </h2>
-                    <p className="text-xl text-foreground/60">
-                        Всё необходимое для успеха в вашей карьере
-                    </p>
-                </motion.div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {features.map((feature, index) => (
-                        <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.2, duration: 0.8 }}
+            <section className="py-24" style={{ background: "rgb(var(--bg))" }}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7 }}
+                        className="text-center mb-16"
+                    >
+                        <div
+                            className="inline-block text-xs font-semibold uppercase tracking-widest mb-4 px-3 py-1 rounded-full"
+                            style={{ color: "var(--badge-indigo-color)", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)" }}
                         >
-                            <Card hover className="h-full shadow-md hover:shadow-xl transition-shadow">
-                                <CardContent className="p-8 text-center">
-                                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/40 rounded-full mb-6">
-                                        <feature.icon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                                    </div>
-                                    <h3 className="text-xl font-semibold text-foreground mb-3">
-                                        {feature.title}
-                                    </h3>
-                                    <p className="text-foreground/60">{feature.description}</p>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    ))}
+                            Возможности
+                        </div>
+                        <h2 className="text-4xl font-bold mb-4" style={{ color: "rgb(var(--text-1))" }}>
+                            Почему выбирают{" "}
+                            <span className="gradient-text">LaborExchange</span>?
+                        </h2>
+                        <p className="text-lg max-w-2xl mx-auto" style={{ color: "rgb(var(--text-3))" }}>
+                            Всё необходимое для успеха в вашей карьере собрано в одном месте
+                        </p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {features.map((feature, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 24 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.15, duration: 0.6 }}
+                                whileHover={{ y: -4 }}
+                                className="glass-card p-8 group"
+                            >
+                                <div
+                                    className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} mb-6`}
+                                    style={{ boxShadow: `0 8px 24px ${feature.glow}` }}
+                                >
+                                    <feature.icon className="h-7 w-7 text-white" />
+                                </div>
+                                <h3 className="text-xl font-semibold mb-3" style={{ color: "rgb(var(--text-1))" }}>
+                                    {feature.title}
+                                </h3>
+                                <p style={{ color: "rgb(var(--text-3))" }}>{feature.description}</p>
+                            </motion.div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
             {/* Benefits Section */}
-            <section className="bg-background py-20">
+            <section className="py-24 border-t" style={{ background: "rgb(var(--surface))" }}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <motion.div
-                            initial={{ opacity: 0, x: -20 }}
+                            initial={{ opacity: 0, x: -24 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.8 }}
+                            transition={{ duration: 0.7 }}
                         >
-                            <h2 className="text-4xl font-bold text-foreground mb-6">
-                                Создано для успеха
+                            <div
+                                className="inline-block text-xs font-semibold uppercase tracking-widest mb-4 px-3 py-1 rounded-full"
+                                style={{ color: "var(--badge-indigo-color)", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)" }}
+                            >
+                                Преимущества
+                            </div>
+                            <h2 className="text-4xl font-bold mb-6" style={{ color: "rgb(var(--text-1))" }}>
+                                Создано для{" "}
+                                <span className="gradient-text">успеха</span>
                             </h2>
-                            <p className="text-lg text-foreground/60 mb-8">
-                                Наша платформа предоставляет все инструменты, необходимые для успеха в поиске работы или найме сотрудников.
+                            <p className="text-lg mb-10" style={{ color: "rgb(var(--text-3))" }}>
+                                Наша платформа предоставляет все инструменты, необходимые для успешного поиска работы или найма сотрудников.
                             </p>
                             <ul className="space-y-4">
                                 {benefits.map((benefit, index) => (
                                     <motion.li
                                         key={index}
-                                        initial={{ opacity: 0, x: -20 }}
+                                        initial={{ opacity: 0, x: -16 }}
                                         whileInView={{ opacity: 1, x: 0 }}
                                         viewport={{ once: true }}
-                                        transition={{ delay: index * 0.1, duration: 0.5 }}
-                                        className="flex items-center space-x-3"
+                                        transition={{ delay: index * 0.08, duration: 0.4 }}
+                                        className="flex items-center gap-3"
                                     >
-                                        <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
-                                        <span className="text-foreground/80 font-medium">{benefit}</span>
+                                        <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center"
+                                            style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)" }}>
+                                            <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                                        </div>
+                                        <span className="font-medium" style={{ color: "rgb(var(--text-2))" }}>{benefit}</span>
                                     </motion.li>
                                 ))}
                             </ul>
                         </motion.div>
 
                         <motion.div
-                            initial={{ opacity: 0, x: 20 }}
+                            initial={{ opacity: 0, x: 24 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.8 }}
+                            transition={{ duration: 0.7 }}
                             className="relative"
                         >
-                            <div className="aspect-square bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 rounded-2xl shadow-2xl flex items-center justify-center">
-                                <div className="text-center text-white p-8">
-                                    <Briefcase className="h-24 w-24 mx-auto mb-4 opacity-80" />
-                                    <p className="text-2xl font-bold">Ваша карьера начинается здесь</p>
+                            <div className="relative rounded-3xl overflow-hidden p-px"
+                                style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.5), rgba(139,92,246,0.5), rgba(168,85,247,0.5))" }}>
+                                <div className="rounded-3xl p-12 text-center relative overflow-hidden"
+                                    style={{ background: "rgb(var(--surface))" }}>
+                                    <div className="absolute inset-0 opacity-30"
+                                        style={{ background: "radial-gradient(circle at 50% 50%, rgba(99,102,241,0.4), transparent 70%)" }} />
+                                    <div className="relative">
+                                        <div
+                                            className="inline-flex items-center justify-center w-24 h-24 rounded-3xl mb-6"
+                                            style={{
+                                                background: "linear-gradient(135deg, rgb(99,102,241), rgb(139,92,246))",
+                                                boxShadow: "0 20px 60px rgba(99,102,241,0.4)"
+                                            }}
+                                        >
+                                            <Briefcase className="h-12 w-12 text-white" />
+                                        </div>
+                                        <p className="text-2xl font-bold mb-2" style={{ color: "rgb(var(--text-1))" }}>
+                                            Ваша карьера
+                                        </p>
+                                        <p className="gradient-text text-2xl font-bold">начинается здесь</p>
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
@@ -231,27 +314,45 @@ export default function HomePage() {
             </section>
 
             {/* CTA Section */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8 }}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-2xl p-12 text-center"
-                >
-                    <h2 className="text-4xl font-bold text-white mb-4">
-                        Готовы начать?
-                    </h2>
-                    <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-                        Присоединяйтесь к тысячам соискателей и работодателей, которые нашли своё идеальное совпадение
-                    </p>
-                    <Link href="/auth/register">
-                        <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-gray-100 border-white shadow-lg hover:shadow-xl transition-shadow">
-                            Создать бесплатный аккаунт
-                            <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
-                    </Link>
-                </motion.div>
+            <section className="py-24" style={{ background: "rgb(var(--bg))" }}>
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 24 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7 }}
+                        className="relative rounded-3xl overflow-hidden p-px"
+                        style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.6), rgba(139,92,246,0.6))" }}
+                    >
+                        <div
+                            className="rounded-3xl p-16 text-center relative overflow-hidden"
+                            style={{ background: "rgb(var(--surface))" }}
+                        >
+                            {/* Glow */}
+                            <div className="absolute inset-0 opacity-20"
+                                style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.8), transparent 60%)" }} />
+
+                            <div className="relative">
+                                <h2 className="text-4xl sm:text-5xl font-bold mb-4" style={{ color: "rgb(var(--text-1))" }}>
+                                    Готовы начать?
+                                </h2>
+                                <p className="text-lg mb-10 max-w-xl mx-auto" style={{ color: "rgb(var(--text-2))" }}>
+                                    Присоединяйтесь к тысячам соискателей и работодателей, которые нашли своё идеальное совпадение
+                                </p>
+                                <Link href="/auth/register">
+                                    <motion.button
+                                        whileHover={{ scale: 1.04, y: -2 }}
+                                        whileTap={{ scale: 0.97 }}
+                                        className="btn-primary inline-flex items-center gap-2 px-10 py-4 text-base font-semibold"
+                                    >
+                                        Создать бесплатный аккаунт
+                                        <ArrowRight className="h-5 w-5" />
+                                    </motion.button>
+                                </Link>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
             </section>
         </div>
     );

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { tokenService } from "@/lib/tokenService";
 import { authService } from "@/services/api";
 import type { LoginRequest, RegisterRequest } from "@/types";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 interface AuthContextType {
     isAuthenticated: boolean;

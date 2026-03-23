@@ -177,12 +177,12 @@ export function SkillSelector({
     return (
         <div className={cn("w-full", className)}>
             {/* Label */}
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <Sparkles className="w-4 h-4 text-indigo-500" />
+            <label className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: "rgb(var(--text-2))" }}>
+                <Sparkles className="w-4 h-4" style={{ color: "rgb(99,102,241)" }} />
                 Навыки и технологии
-                <span className="text-xs text-gray-500">
-          ({selectedSkills.length}/{maxSkills})
-        </span>
+                <span className="text-xs" style={{ color: "rgb(var(--text-3))" }}>
+                    ({selectedSkills.length}/{maxSkills})
+                </span>
             </label>
 
             {/* Selected Skills */}
@@ -223,7 +223,7 @@ export function SkillSelector({
             {/* Input Field */}
             <div className="relative">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "rgb(var(--text-3))" }} />
                     <input
                         ref={inputRef}
                         type="text"
@@ -236,24 +236,20 @@ export function SkillSelector({
                         onKeyDown={handleKeyDown}
                         placeholder={placeholder}
                         disabled={selected.length >= maxSkills}
-                        className={cn(
-                            "w-full pl-10 pr-10 py-3 border-2 rounded-xl",
-                            "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
-                            "transition-all duration-200",
-                            "bg-white dark:bg-gray-800",
-                            "border-gray-200 dark:border-gray-700",
-                            "text-gray-900 dark:text-gray-100",
-                            "placeholder:text-gray-400",
-                            "disabled:opacity-50 disabled:cursor-not-allowed",
-                            isOpen && "ring-2 ring-indigo-500 border-transparent"
-                        )}
+                        className="w-full pl-10 pr-10 py-3 rounded-xl outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{
+                            background: "rgb(var(--card-bg))",
+                            border: isOpen ? "1px solid rgb(99,102,241)" : "1px solid var(--card-border)",
+                            color: "rgb(var(--text-1))",
+                            boxShadow: isOpen ? "0 0 0 2px rgba(99,102,241,0.2)" : "none",
+                        }}
                     />
                     <motion.div
                         animate={{ rotate: isOpen ? 180 : 0 }}
                         transition={{ duration: 0.2 }}
                         className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
-                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                        <ChevronDown className="w-5 h-5" style={{ color: "rgb(var(--text-3))" }} />
                     </motion.div>
                 </div>
 
@@ -266,11 +262,12 @@ export function SkillSelector({
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+                            className="absolute z-50 w-full mt-2 rounded-xl shadow-2xl overflow-hidden"
+                            style={{ background: "rgb(var(--card-bg))", border: "1px solid var(--card-border)" }}
                         >
                             <div className="max-h-60 overflow-y-auto">
                                 {isLoading ? (
-                                    <div className="px-4 py-8 text-center text-gray-500">
+                                    <div className="px-4 py-8 text-center" style={{ color: "rgb(var(--text-3))" }}>
                                         <motion.div
                                             animate={{ rotate: 360 }}
                                             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -281,7 +278,7 @@ export function SkillSelector({
                                         <p className="mt-2">Загрузка...</p>
                                     </div>
                                 ) : filteredSkills.length === 0 && !showCreateOption ? (
-                                    <div className="px-4 py-8 text-center text-gray-500">
+                                    <div className="px-4 py-8 text-center" style={{ color: "rgb(var(--text-3))" }}>
                                         {inputValue ? "Ничего не найдено" : "Начните вводить..."}
                                     </div>
                                 ) : (
@@ -294,18 +291,15 @@ export function SkillSelector({
                                                 animate={{ opacity: 1, x: 0 }}
                                                 transition={{ delay: index * 0.05 }}
                                                 onClick={() => handleAddSkill(skill)}
-                                                className={cn(
-                                                    "w-full px-4 py-3 text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors",
-                                                    "flex items-center gap-3",
-                                                    highlightedIndex === index && "bg-indigo-50 dark:bg-indigo-900/20"
-                                                )}
+                                                className="w-full px-4 py-3 text-left transition-colors flex items-center gap-3"
+                                                style={{
+                                                    background: highlightedIndex === index ? "rgba(99,102,241,0.1)" : "transparent",
+                                                }}
                                             >
                                                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white font-semibold text-sm">
                                                     {skill.name.charAt(0).toUpperCase()}
                                                 </div>
-                                                <span className="text-gray-700 dark:text-gray-300">
-                          {skill.name}
-                        </span>
+                                                <span style={{ color: "rgb(var(--text-1))" }}>{skill.name}</span>
                                             </motion.button>
                                         ))}
 
@@ -316,21 +310,20 @@ export function SkillSelector({
                                                 animate={{ opacity: 1, x: 0 }}
                                                 transition={{ delay: filteredSkills.length * 0.05 }}
                                                 onClick={handleCreateNewSkill}
-                                                className={cn(
-                                                    "w-full px-4 py-3 text-left hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors",
-                                                    "flex items-center gap-3 border-t border-gray-200 dark:border-gray-700",
-                                                    highlightedIndex === filteredSkills.length &&
-                                                    "bg-green-50 dark:bg-green-900/20"
-                                                )}
+                                                className="w-full px-4 py-3 text-left transition-colors flex items-center gap-3 border-t"
+                                                style={{
+                                                    borderColor: "var(--card-border)",
+                                                    background: highlightedIndex === filteredSkills.length ? "rgba(52,211,153,0.1)" : "transparent",
+                                                }}
                                             >
                                                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-emerald-400 flex items-center justify-center">
                                                     <Plus className="w-5 h-5 text-white" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-gray-700 dark:text-gray-300 font-medium">
+                                                    <p className="font-medium" style={{ color: "rgb(var(--text-1))" }}>
                                                         Создать "{inputValue}"
                                                     </p>
-                                                    <p className="text-xs text-gray-500">
+                                                    <p className="text-xs" style={{ color: "rgb(var(--text-3))" }}>
                                                         Добавить новый навык
                                                     </p>
                                                 </div>
@@ -348,7 +341,7 @@ export function SkillSelector({
             <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mt-2 text-xs text-gray-500 dark:text-gray-400"
+                className="mt-2 text-xs" style={{ color: "rgb(var(--text-3))" }}
             >
                 💡 Начните вводить название навыка. Нажмите Enter для создания нового.
             </motion.p>

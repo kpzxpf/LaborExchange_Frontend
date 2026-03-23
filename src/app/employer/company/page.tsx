@@ -16,15 +16,15 @@ import {
 import { cn } from "@/lib/utils";
 import { companyService } from "@/services/api";
 import type { CompanyDto } from "@/types";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const inputCls = cn(
     "w-full px-4 py-3 border-2 rounded-xl",
     "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
     "transition-all duration-200",
-    "bg-white dark:bg-gray-700",
-    "border-gray-200 dark:border-gray-600",
-    "text-gray-900 dark:text-gray-100",
+    "bg-slate-50 dark:bg-[#11111c]",
+    "border-slate-200 dark:border-slate-700",
+    "text-slate-900 dark:text-slate-100",
     "placeholder:text-gray-400"
 );
 
@@ -97,33 +97,33 @@ export default function EditCompanyPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center" style={{ background: "rgb(var(--bg))" }}>
                 <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="min-h-screen" style={{ background: "rgb(var(--bg))", color: "rgb(var(--text-1))" }}>
             {/* Sticky header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
+                className="page-header-glass border-b border-white/5 sticky top-0 z-10"
             >
                 <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
                     <motion.button
                         whileHover={{ scale: 1.05, x: -5 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => router.back()}
-                        className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5" />
                         <span className="font-medium">Назад</span>
                     </motion.button>
                     <div className="flex items-center gap-2">
                         <Building2 className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Моя компания</h1>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Моя компания</h1>
                     </div>
                     <div className="w-24" />
                 </div>
@@ -134,11 +134,11 @@ export default function EditCompanyPage() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 space-y-5"
+                        className="glass-card p-8 space-y-5"
                     >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="md:col-span-2">
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                     <Building2 className="w-4 h-4" />
                                     Название компании *
                                 </label>
@@ -153,7 +153,7 @@ export default function EditCompanyPage() {
                             </div>
 
                             <div>
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                     <MapPin className="w-4 h-4" />
                                     Местоположение *
                                 </label>
@@ -168,7 +168,7 @@ export default function EditCompanyPage() {
                             </div>
 
                             <div>
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                     <Mail className="w-4 h-4" />
                                     Email компании *
                                 </label>
@@ -184,7 +184,7 @@ export default function EditCompanyPage() {
                             </div>
 
                             <div>
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                     <Phone className="w-4 h-4" />
                                     Телефон
                                 </label>
@@ -198,7 +198,7 @@ export default function EditCompanyPage() {
                             </div>
 
                             <div>
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                     <Globe className="w-4 h-4" />
                                     Сайт
                                 </label>
@@ -212,7 +212,7 @@ export default function EditCompanyPage() {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                                     Описание компании
                                 </label>
                                 <textarea
@@ -236,7 +236,7 @@ export default function EditCompanyPage() {
                                     "px-8 py-3 rounded-xl font-medium flex items-center gap-2 transition-all duration-200",
                                     isValid && !saving
                                         ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
-                                        : "bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
+                                        : "bg-slate-200 dark:bg-slate-700 text-slate-500 cursor-not-allowed"
                                 )}
                             >
                                 {saving ? (

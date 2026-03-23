@@ -4,13 +4,33 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Eye, Trash2, Briefcase, DollarSign, Globe, EyeOff } from "lucide-react";
+import { Plus, Eye, Trash2, Briefcase, Globe, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import Button from "@/components/ui/Button";
-import Card, { CardContent } from "@/components/ui/Card";
 import { vacancyService } from "@/services/api";
 import type { VacancyDto } from "@/types";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
+
+function VacanciesSkeleton() {
+    return (
+        <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+                <div key={i} className="card p-6 space-y-3">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 space-y-2">
+                            <div className="skeleton h-6 w-1/2 rounded-lg" />
+                            <div className="skeleton h-4 w-1/3 rounded-lg" />
+                            <div className="skeleton h-4 w-full rounded-lg" />
+                        </div>
+                        <div className="flex gap-2">
+                            <div className="skeleton h-9 w-24 rounded-xl" />
+                            <div className="skeleton h-9 w-20 rounded-xl" />
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
 
 export default function EmployerVacanciesPage() {
     const { isAuthenticated, userRole, userId, loading } = useAuth();
@@ -23,22 +43,16 @@ export default function EmployerVacanciesPage() {
             router.push("/auth/login");
             return;
         }
-
-        if (isAuthenticated && userRole === "EMPLOYER" && userId) {
-            fetchVacancies();
-        }
+        if (isAuthenticated && userRole === "EMPLOYER" && userId) fetchVacancies();
     }, [isAuthenticated, userRole, userId, loading, router]);
 
     const fetchVacancies = async () => {
-        if (!userId) return;
-
         setIsLoading(true);
         try {
-            const response = await vacancyService.getByEmployer(userId, 0, 100);
+            const response = await vacancyService.getByEmployer(userId!, 0, 100);
             setVacancies(Array.isArray(response.content) ? response.content : []);
-        } catch (error) {
+        } catch {
             toast.error("Не удалось загрузить вакансии");
-            console.error("Fetch vacancies error:", error);
         } finally {
             setIsLoading(false);
         }
@@ -46,12 +60,11 @@ export default function EmployerVacanciesPage() {
 
     const handleDelete = async (id: number) => {
         if (!confirm("Удалить вакансию?")) return;
-
         try {
             await vacancyService.delete(id);
             toast.success("Вакансия удалена");
             fetchVacancies();
-        } catch (error) {
+        } catch {
             toast.error("Не удалось удалить вакансию");
         }
     };
@@ -66,152 +79,120 @@ export default function EmployerVacanciesPage() {
                 toast.success("Вакансия опубликована");
             }
             fetchVacancies();
-        } catch (error) {
-            toast.error("Не удалось изменить статус публикации");
+        } catch {
+            toast.error("Не удалось изменить статус");
         }
     };
 
-    if (loading || isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-            </div>
-        );
-    }
-
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-background py-8 dark:text-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen py-8" style={{ background: "rgb(var(--bg))", color: "rgb(var(--text-1))" }}>
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8 flex items-center justify-between"
-                >
+                <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                            Мои вакансии
-                        </h1>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Управление объявлениями о вакансиях
+                        <h1 className="text-3xl font-bold" style={{ color: "rgb(var(--text-1))" }}>Мои вакансии</h1>
+                        <p className="mt-1 text-sm" style={{ color: "rgb(var(--text-3))" }}>
+                            Управление объявлениями
                         </p>
                     </div>
                     <Link href="/employer/vacancies/create">
-                        <Button>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Разместить новую вакансию
-                        </Button>
+                        <button className="btn-primary flex items-center gap-2">
+                            <Plus className="h-4 w-4" />
+                            Новая вакансия
+                        </button>
                     </Link>
                 </motion.div>
 
-                {/* Vacancies List */}
-                {vacancies.length > 0 ? (
+                {/* List */}
+                {loading || isLoading ? (
+                    <VacanciesSkeleton />
+                ) : vacancies.length === 0 ? (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                        className="glass-card p-16 text-center">
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 icon-box">
+                            <Briefcase className="h-8 w-8" style={{ color: "rgb(99,102,241)" }} />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2" style={{ color: "rgb(var(--text-1))" }}>Вакансий пока нет</h3>
+                        <p className="text-sm mb-6" style={{ color: "rgb(var(--text-3))" }}>
+                            Создайте первое объявление о вакансии, чтобы начать набор персонала
+                        </p>
+                        <Link href="/employer/vacancies/create">
+                            <button className="btn-primary flex items-center gap-2 mx-auto">
+                                <Plus className="h-4 w-4" />
+                                Разместить вакансию
+                            </button>
+                        </Link>
+                    </motion.div>
+                ) : (
                     <div className="space-y-4">
                         {vacancies.map((vacancy, index) => (
                             <motion.div
                                 key={vacancy.id}
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 16 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
+                                whileHover={{ y: -2 }}
+                                className="card p-6"
                             >
-                                <Card hover>
-                                    <CardContent className="p-6">
-                                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                                                        {vacancy.title}
-                                                    </h3>
-                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                                        vacancy.isPublished
-                                                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                                            : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
-                                                    }`}>
-                                                        {vacancy.isPublished ? "Опубликована" : "Черновик"}
-                                                    </span>
-                                                </div>
-
-                                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
-                                                    <div className="flex items-center">
-                                                        <Briefcase className="h-4 w-4 mr-1" />
-                                                        {vacancy.companyName}
-                                                    </div>
-
-                                                    {vacancy.salary && vacancy.salary > 0 && (
-                                                        <div className="flex items-center text-green-600 font-medium">
-                                                            <DollarSign className="h-4 w-4 mr-1" />
-                                                            {vacancy.salary.toLocaleString()} ₽
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <p className="text-gray-700 dark:text-gray-300 line-clamp-2">
-                                                    {vacancy.description}
-                                                </p>
-                                            </div>
-
-                                            <div className="flex items-center gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleTogglePublish(vacancy)}
-                                                    title={vacancy.isPublished ? "Снять с публикации" : "Опубликовать"}
-                                                >
-                                                    {vacancy.isPublished ? (
-                                                        <>
-                                                            <EyeOff className="h-4 w-4 mr-1" />
-                                                            Скрыть
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Globe className="h-4 w-4 mr-1" />
-                                                            Опубликовать
-                                                        </>
-                                                    )}
-                                                </Button>
-                                                <Link href={`/employer/vacancies/${vacancy.id}`}>
-                                                    <Button variant="outline" size="sm">
-                                                        <Eye className="h-4 w-4 mr-2" />
-                                                        Вид
-                                                    </Button>
-                                                </Link>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleDelete(vacancy.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-red-600" />
-                                                </Button>
-                                            </div>
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                            <h3 className="text-lg font-semibold" style={{ color: "rgb(var(--text-1))" }}>
+                                                {vacancy.title}
+                                            </h3>
+                                            <span className={`badge ${vacancy.isPublished ? "badge-emerald" : "badge-slate"}`}>
+                                                {vacancy.isPublished ? "Опубликована" : "Черновик"}
+                                            </span>
                                         </div>
-                                    </CardContent>
-                                </Card>
+
+                                        <div className="flex flex-wrap items-center gap-4 text-sm mb-3"
+                                            style={{ color: "rgb(var(--text-3))" }}>
+                                            <div className="flex items-center gap-1.5">
+                                                <Briefcase className="h-3.5 w-3.5" />
+                                                {vacancy.companyName}
+                                            </div>
+                                            {vacancy.salary && vacancy.salary > 0 && (
+                                                <span className="badge badge-emerald">
+                                                    {vacancy.salary.toLocaleString()} ₽
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <p className="text-sm line-clamp-2" style={{ color: "rgb(var(--text-3))" }}>
+                                            {vacancy.description}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <button
+                                            onClick={() => handleTogglePublish(vacancy)}
+                                            className={`text-xs px-3 py-2 rounded-xl font-semibold flex items-center gap-1.5 transition-all ${
+                                                vacancy.isPublished
+                                                    ? "bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/20"
+                                                    : "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20"
+                                            }`}
+                                        >
+                                            {vacancy.isPublished
+                                                ? <><EyeOff className="h-3.5 w-3.5" /> Скрыть</>
+                                                : <><Globe className="h-3.5 w-3.5" /> Опубликовать</>}
+                                        </button>
+                                        <Link href={`/employer/vacancies/${vacancy.id}`}>
+                                            <button className="btn-secondary text-xs px-3 py-2 flex items-center gap-1.5">
+                                                <Eye className="h-3.5 w-3.5" /> Просмотр
+                                            </button>
+                                        </Link>
+                                        <button
+                                            onClick={() => handleDelete(vacancy.id)}
+                                            className="p-2 rounded-xl text-[rgb(var(--text-3))] hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </div>
                             </motion.div>
                         ))}
                     </div>
-                ) : (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
-                        <Card>
-                            <CardContent className="p-12 text-center">
-                                <Briefcase className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                                    Вакансий пока нет
-                                </h3>
-                                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                                    Создайте первое объявление о вакансии, чтобы начать набор персонала
-                                </p>
-                                <Link href="/employer/vacancies/create">
-                                    <Button>
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Разместите свою первую вакансию
-                                    </Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
                 )}
             </div>
         </div>

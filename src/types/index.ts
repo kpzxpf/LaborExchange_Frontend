@@ -67,9 +67,12 @@ export interface CompanyDto {
 export interface ResumeDto {
     id: number;
     userId: number;
+    firstName?: string;
+    lastName?: string;
     title: string;
     summary?: string;
     experienceYears?: number;
+    location?: string;
     contactEmail?: string;
     contactPhone?: string;
     isPublished?: boolean;
@@ -89,6 +92,57 @@ export interface EducationDto {
     resumeId?: number;
 }
 
+// ======================== WORK EXPERIENCE ========================
+export interface WorkExperienceDto {
+    id?: number;
+    resumeId?: number;
+    companyName: string;
+    position: string;
+    description?: string;
+    startYear: number;
+    startMonth?: number;
+    endYear?: number;
+    endMonth?: number;
+    isCurrent?: boolean;
+}
+
+// ======================== AI RESUME ========================
+export interface AiResumeRequestDto {
+    jobTitle: string;
+    description: string;
+    yearsOfExperience?: number;
+    location?: string;
+}
+
+export interface AiResumeResponseDto {
+    title: string;
+    summary: string;
+    location?: string;
+    experienceYears?: number;
+    suggestedSkillNames: string[];
+    workExperiences: AiWorkExperienceItem[];
+    educations: AiEducationItem[];
+}
+
+export interface AiWorkExperienceItem {
+    companyName: string;
+    position: string;
+    description?: string;
+    startYear?: number;
+    startMonth?: number;
+    endYear?: number;
+    endMonth?: number;
+    isCurrent?: boolean;
+}
+
+export interface AiEducationItem {
+    institution: string;
+    degree: string;
+    fieldOfStudy: string;
+    startYear?: number;
+    endYear?: number;
+}
+
 // ======================== SKILL ========================
 export interface SkillDto {
     id: number;
@@ -102,6 +156,7 @@ export interface ApplicationRequestDto {
     employerId: number;
     candidateId: number;
     resumeId: number;
+    coverLetter?: string;
 }
 
 export interface ApplicationResponseDto {
@@ -111,11 +166,13 @@ export interface ApplicationResponseDto {
     resumeId: number;
     employerId: number;
     statusName?: string;
+    statusCode?: string;
     vacancyTitle?: string;
     companyName?: string;
     candidateName?: string;
     candidateEmail?: string;
     resumeTitle?: string;
+    coverLetter?: string;
     createdAt: string;
 }
 
@@ -133,6 +190,8 @@ export interface VacancySearchRequest {
     location?: string;
     salaryMin?: number;
     salaryMax?: number;
+    sortBy?: string;
+    sortOrder?: string;
     page?: number;
     size?: number;
 }
@@ -151,8 +210,11 @@ export interface VacancySearchResponse {
 export interface ResumeSearchRequest {
     query?: string;
     skills?: string[];
+    location?: string;
     experienceYearsMin?: number;
     experienceYearsMax?: number;
+    sortBy?: string;
+    sortOrder?: string;
     page?: number;
     size?: number;
 }
@@ -162,6 +224,7 @@ export interface ResumeSearchResponse {
     title: string;
     summary?: string;
     experienceYears?: number;
+    location?: string;
     skills?: string[];
     institutions?: string[];
 }
@@ -183,6 +246,57 @@ export interface PageResponse<T> {
     totalPages: number;
     number?: number;
     size?: number;
+}
+
+// ======================== STATISTICS ========================
+export interface DailyPointDto {
+    date: string;
+    views: number;
+}
+
+export interface VacancyStatsDto {
+    vacancyId: number;
+    vacancyTitle: string;
+    totalViews: number;
+    uniqueViewers: number;
+    viewsLast7Days: number;
+    uniqueViewersLast7Days: number;
+    lastViewedAt?: string;
+    dailyViews: DailyPointDto[];
+    totalApplications: number;
+    newApplications: number;
+    acceptedApplications: number;
+    rejectedApplications: number;
+    conversionRate: number;
+}
+
+export interface ResumeStatsDto {
+    resumeId: number;
+    resumeTitle: string;
+    totalViews: number;
+    uniqueViewers: number;
+    viewsLast7Days: number;
+    uniqueViewersLast7Days: number;
+    lastViewedAt?: string;
+    dailyViews: DailyPointDto[];
+}
+
+export interface EmployerDashboardDto {
+    totalViewsAllTime: number;
+    totalViewsLast7Days: number;
+    totalApplications: number;
+    activeApplications: number;
+    applicationsByStatus: Record<string, number>;
+    overallConversionRate: number;
+    topVacancies: {
+        vacancyId: number;
+        vacancyTitle: string;
+        views: number;
+        applications: number;
+        conversionRate: number;
+        lastViewedAt?: string;
+    }[];
+    dailyViews: DailyPointDto[];
 }
 
 // ======================== API ERROR ========================

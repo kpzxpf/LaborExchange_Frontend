@@ -118,7 +118,7 @@ export default function EditVacancyPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center" style={{ background: "rgb(var(--bg))" }}>
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -131,7 +131,7 @@ export default function EditVacancyPage() {
                     >
                         <Loader2 className="w-12 h-12 text-indigo-600" />
                     </motion.div>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-slate-600 dark:text-slate-400">
                         Загрузка вакансии...
                     </p>
                 </motion.div>
@@ -145,12 +145,12 @@ export default function EditVacancyPage() {
         formData.companyName.trim();
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="min-h-screen" style={{ background: "rgb(var(--bg))", color: "rgb(var(--text-1))" }}>
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
+                className="page-header-glass border-b border-white/5 sticky top-0 z-10"
             >
                 <div className="max-w-4xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
@@ -158,7 +158,7 @@ export default function EditVacancyPage() {
                             whileHover={{ scale: 1.05, x: -5 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => router.back()}
-                            className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                            className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                         >
                             <ArrowLeft className="w-5 h-5" />
                             <span className="font-medium">Назад</span>
@@ -166,7 +166,7 @@ export default function EditVacancyPage() {
 
                         <div className="flex items-center gap-2">
                             <Briefcase className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                                 Редактировать вакансию
                             </h1>
                         </div>
@@ -203,16 +203,16 @@ export default function EditVacancyPage() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 space-y-6"
+                        className="glass-card p-8 space-y-6"
                     >
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <h2 className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                             <FileText className="w-5 h-5 text-indigo-600" />
                             Основная информация
                         </h2>
 
                         {/* Title */}
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 <Briefcase className="w-4 h-4" />
                                 Название должности *
                             </label>
@@ -227,9 +227,9 @@ export default function EditVacancyPage() {
                                     "w-full px-4 py-3 border-2 rounded-xl",
                                     "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
                                     "transition-all duration-200",
-                                    "bg-white dark:bg-gray-700",
-                                    "border-gray-200 dark:border-gray-600",
-                                    "text-gray-900 dark:text-gray-100",
+                                    "bg-slate-50 dark:bg-[#11111c]",
+                                    "border-slate-200 dark:border-slate-700",
+                                    "text-slate-900 dark:text-slate-100",
                                     "placeholder:text-gray-400"
                                 )}
                             />
@@ -237,7 +237,7 @@ export default function EditVacancyPage() {
 
                         {/* Company Name */}
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 <Building2 className="w-4 h-4" />
                                 Название компании *
                             </label>
@@ -252,9 +252,9 @@ export default function EditVacancyPage() {
                                     "w-full px-4 py-3 border-2 rounded-xl",
                                     "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
                                     "transition-all duration-200",
-                                    "bg-white dark:bg-gray-700",
-                                    "border-gray-200 dark:border-gray-600",
-                                    "text-gray-900 dark:text-gray-100",
+                                    "bg-slate-50 dark:bg-[#11111c]",
+                                    "border-slate-200 dark:border-slate-700",
+                                    "text-slate-900 dark:text-slate-100",
                                     "placeholder:text-gray-400"
                                 )}
                             />
@@ -262,7 +262,7 @@ export default function EditVacancyPage() {
 
                         {/* Salary */}
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 <DollarSign className="w-4 h-4" />
                                 Зарплата (необязательно)
                             </label>
@@ -276,9 +276,9 @@ export default function EditVacancyPage() {
                                     "w-full px-4 py-3 border-2 rounded-xl",
                                     "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
                                     "transition-all duration-200",
-                                    "bg-white dark:bg-gray-700",
-                                    "border-gray-200 dark:border-gray-600",
-                                    "text-gray-900 dark:text-gray-100",
+                                    "bg-slate-50 dark:bg-[#11111c]",
+                                    "border-slate-200 dark:border-slate-700",
+                                    "text-slate-900 dark:text-slate-100",
                                     "placeholder:text-gray-400"
                                 )}
                             />
@@ -286,7 +286,7 @@ export default function EditVacancyPage() {
 
                         {/* Description */}
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 <FileText className="w-4 h-4" />
                                 Описание вакансии *
                             </label>
@@ -301,9 +301,9 @@ export default function EditVacancyPage() {
                                     "w-full px-4 py-3 border-2 rounded-xl",
                                     "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
                                     "transition-all duration-200",
-                                    "bg-white dark:bg-gray-700",
-                                    "border-gray-200 dark:border-gray-600",
-                                    "text-gray-900 dark:text-gray-100",
+                                    "bg-slate-50 dark:bg-[#11111c]",
+                                    "border-slate-200 dark:border-slate-700",
+                                    "text-slate-900 dark:text-slate-100",
                                     "placeholder:text-gray-400",
                                     "resize-none"
                                 )}
@@ -316,7 +316,7 @@ export default function EditVacancyPage() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8"
+                        className="glass-card p-8"
                     >
                         <SkillSelector
                             selected={selectedSkills}
@@ -338,7 +338,7 @@ export default function EditVacancyPage() {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => router.back()}
-                            className="px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            className="px-6 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
                         >
                             Отмена
                         </motion.button>
@@ -353,7 +353,7 @@ export default function EditVacancyPage() {
                                 "transition-all duration-200",
                                 isFormValid && !isSaving
                                     ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
-                                    : "bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
+                                    : "bg-slate-200 dark:bg-slate-700 text-slate-500 cursor-not-allowed"
                             )}
                         >
                             {isSaving ? (

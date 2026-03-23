@@ -23,15 +23,15 @@ import { vacancyService, companyService } from "@/services/api";
 import { SkillSelector } from "@/components/ui/SkillSelector";
 import { useAuth } from "@/contexts/AuthContext";
 import type { CompanyDto } from "@/types";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const inputCls = cn(
     "w-full px-4 py-3 border-2 rounded-xl",
     "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
     "transition-all duration-200",
-    "bg-white dark:bg-gray-700",
-    "border-gray-200 dark:border-gray-600",
-    "text-gray-900 dark:text-gray-100",
+    "bg-slate-50 dark:bg-[#11111c]",
+    "border-slate-200 dark:border-slate-700",
+    "text-slate-900 dark:text-slate-100",
     "placeholder:text-gray-400"
 );
 
@@ -164,26 +164,26 @@ export default function CreateVacancyPage() {
     const isFormValid = vacancyValid && companyValid;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="min-h-screen" style={{ background: "rgb(var(--bg))", color: "rgb(var(--text-1))" }}>
             {/* Sticky header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
+                className="page-header-glass border-b border-white/5 sticky top-0 z-10"
             >
                 <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
                     <motion.button
                         whileHover={{ scale: 1.05, x: -5 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => router.back()}
-                        className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="flex items-center gap-2 text-[rgb(var(--text-2))] hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5" />
                         <span className="font-medium">Назад</span>
                     </motion.button>
                     <div className="flex items-center gap-2">
                         <Briefcase className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Новая вакансия</h1>
+                        <h1 className="text-2xl font-bold text-[rgb(var(--text-1))]">Новая вакансия</h1>
                     </div>
                     <div className="w-24" />
                 </div>
@@ -197,9 +197,9 @@ export default function CreateVacancyPage() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.1 }}
-                        className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 space-y-5"
+                        className="glass-card p-8 space-y-5"
                     >
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <h2 className="text-xl font-semibold text-[rgb(var(--text-1))] flex items-center gap-2">
                             <Building2 className="w-5 h-5 text-indigo-600" />
                             Компания
                         </h2>
@@ -214,27 +214,28 @@ export default function CreateVacancyPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="flex items-start gap-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800"
+                                className="flex items-start gap-4 p-4 rounded-xl"
+                                style={{ background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)" }}
                             >
-                                <CheckCircle className="w-6 h-6 text-green-600 shrink-0 mt-0.5" />
+                                <CheckCircle className="w-6 h-6 shrink-0 mt-0.5" style={{ color: "rgb(52,211,153)" }} />
                                 <div className="flex-1">
-                                    <p className="font-semibold text-gray-900 dark:text-white text-lg">{myCompany.name}</p>
+                                    <p className="font-semibold text-[rgb(var(--text-1))] text-lg">{myCompany.name}</p>
                                     {myCompany.location && (
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-1">
                                             <MapPin className="w-3.5 h-3.5" />{myCompany.location}
                                         </p>
                                     )}
                                     {myCompany.email && (
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1">
                                             <Mail className="w-3.5 h-3.5" />{myCompany.email}
                                         </p>
                                     )}
                                     {myCompany.website && (
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1">
                                             <Globe className="w-3.5 h-3.5" />{myCompany.website}
                                         </p>
                                     )}
-                                    <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                                    <p className="text-xs mt-2" style={{ color: "rgb(52,211,153)" }}>
                                         Вакансия будет привязана к этой компании
                                     </p>
                                 </div>
@@ -249,10 +250,10 @@ export default function CreateVacancyPage() {
                         ) : myCompany && editingCompany ? (
                             /* Редактирование компании */
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Редактирование компании</p>
+                                <p className="text-sm font-medium text-[rgb(var(--text-2))]">Редактирование компании</p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2">
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                        <label className="text-sm font-medium text-[rgb(var(--text-2))] mb-1 block">
                                             <Building2 className="w-4 h-4 inline mr-1" />Название *
                                         </label>
                                         <input name="name" value={editCompanyForm.name}
@@ -260,7 +261,7 @@ export default function CreateVacancyPage() {
                                             className={inputCls} />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                        <label className="text-sm font-medium text-[rgb(var(--text-2))] mb-1 block">
                                             <MapPin className="w-4 h-4 inline mr-1" />Местоположение *
                                         </label>
                                         <input name="location" value={editCompanyForm.location}
@@ -268,7 +269,7 @@ export default function CreateVacancyPage() {
                                             className={inputCls} />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                        <label className="text-sm font-medium text-[rgb(var(--text-2))] mb-1 block">
                                             <Mail className="w-4 h-4 inline mr-1" />Email *
                                         </label>
                                         <input type="email" name="email" value={editCompanyForm.email}
@@ -276,7 +277,7 @@ export default function CreateVacancyPage() {
                                             className={inputCls} />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                        <label className="text-sm font-medium text-[rgb(var(--text-2))] mb-1 block">
                                             <Phone className="w-4 h-4 inline mr-1" />Телефон
                                         </label>
                                         <input name="phoneNumber" value={editCompanyForm.phoneNumber}
@@ -284,7 +285,7 @@ export default function CreateVacancyPage() {
                                             className={inputCls} />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                        <label className="text-sm font-medium text-[rgb(var(--text-2))] mb-1 block">
                                             <Globe className="w-4 h-4 inline mr-1" />Сайт
                                         </label>
                                         <input name="website" value={editCompanyForm.website}
@@ -292,7 +293,7 @@ export default function CreateVacancyPage() {
                                             className={inputCls} />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Описание</label>
+                                        <label className="text-sm font-medium text-[rgb(var(--text-2))] mb-1 block">Описание</label>
                                         <textarea name="description" value={editCompanyForm.description} rows={2}
                                             onChange={e => setEditCompanyForm(p => ({ ...p, description: e.target.value }))}
                                             className={cn(inputCls, "resize-none")} />
@@ -304,7 +305,7 @@ export default function CreateVacancyPage() {
                                         Сохранить компанию
                                     </button>
                                     <button type="button" onClick={() => setEditingCompany(false)}
-                                        className="px-5 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        className="px-5 py-2.5 border-2 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 rounded-xl font-medium hover:bg-white/5 transition-colors">
                                         Отмена
                                     </button>
                                 </div>
@@ -325,7 +326,7 @@ export default function CreateVacancyPage() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2">
-                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-[rgb(var(--text-2))] mb-2">
                                             <Building2 className="w-4 h-4" />
                                             Название компании *
                                         </label>
@@ -340,7 +341,7 @@ export default function CreateVacancyPage() {
                                     </div>
 
                                     <div>
-                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-[rgb(var(--text-2))] mb-2">
                                             <MapPin className="w-4 h-4" />
                                             Местоположение *
                                         </label>
@@ -355,7 +356,7 @@ export default function CreateVacancyPage() {
                                     </div>
 
                                     <div>
-                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-[rgb(var(--text-2))] mb-2">
                                             <Mail className="w-4 h-4" />
                                             Email компании *
                                         </label>
@@ -371,7 +372,7 @@ export default function CreateVacancyPage() {
                                     </div>
 
                                     <div>
-                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-[rgb(var(--text-2))] mb-2">
                                             <Phone className="w-4 h-4" />
                                             Телефон
                                         </label>
@@ -385,7 +386,7 @@ export default function CreateVacancyPage() {
                                     </div>
 
                                     <div>
-                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-[rgb(var(--text-2))] mb-2">
                                             <Globe className="w-4 h-4" />
                                             Сайт
                                         </label>
@@ -399,7 +400,7 @@ export default function CreateVacancyPage() {
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                                        <label className="text-sm font-medium text-[rgb(var(--text-2))] mb-2 block">
                                             Описание компании
                                         </label>
                                         <textarea
@@ -421,15 +422,15 @@ export default function CreateVacancyPage() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 space-y-6"
+                        className="glass-card p-8 space-y-6"
                     >
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <h2 className="text-xl font-semibold text-[rgb(var(--text-1))] flex items-center gap-2">
                             <FileText className="w-5 h-5 text-indigo-600" />
                             Информация о вакансии
                         </h2>
 
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="flex items-center gap-2 text-sm font-medium text-[rgb(var(--text-2))] mb-2">
                                 <Briefcase className="w-4 h-4" />
                                 Название должности *
                             </label>
@@ -445,7 +446,7 @@ export default function CreateVacancyPage() {
                         </div>
 
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="flex items-center gap-2 text-sm font-medium text-[rgb(var(--text-2))] mb-2">
                                 <DollarSign className="w-4 h-4" />
                                 Зарплата (необязательно)
                             </label>
@@ -460,7 +461,7 @@ export default function CreateVacancyPage() {
                         </div>
 
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="flex items-center gap-2 text-sm font-medium text-[rgb(var(--text-2))] mb-2">
                                 <FileText className="w-4 h-4" />
                                 Описание вакансии *
                             </label>
@@ -481,7 +482,7 @@ export default function CreateVacancyPage() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8"
+                        className="glass-card p-8"
                     >
                         <SkillSelector
                             selected={selectedSkills}
@@ -503,7 +504,7 @@ export default function CreateVacancyPage() {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => router.back()}
-                            className="px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            className="px-6 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
                         >
                             Отмена
                         </motion.button>
@@ -517,7 +518,7 @@ export default function CreateVacancyPage() {
                                 "px-8 py-3 rounded-xl font-medium flex items-center gap-2 transition-all duration-200",
                                 isFormValid && !isLoading && !companyLoading
                                     ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
-                                    : "bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
+                                    : "bg-slate-200 dark:bg-slate-700 text-slate-500 cursor-not-allowed"
                             )}
                         >
                             {isLoading ? (

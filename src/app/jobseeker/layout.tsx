@@ -16,10 +16,10 @@ export default function JobseekerLayout({ children }: { children: React.ReactNod
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center" style={{ background: "rgb(var(--bg))" }}>
                 <div className="space-y-3 w-full max-w-3xl px-6">
                     {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-20 bg-foreground/[0.03] rounded-2xl animate-pulse" />
+                        <div key={i} className="skeleton h-20 rounded-2xl" />
                     ))}
                 </div>
             </div>
