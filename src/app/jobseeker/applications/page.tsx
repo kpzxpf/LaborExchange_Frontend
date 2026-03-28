@@ -12,8 +12,6 @@ import {
     Clock,
     Eye,
     Trash2,
-    DollarSign,
-    ChevronDown,
     MessageSquare,
 } from "lucide-react";
 import { applicationService } from "@/services/api";
@@ -32,7 +30,8 @@ interface Application {
     companyName: string;
     location?: string;
     salary?: number | null;
-    statusName: string;
+    statusName: string;   // human-readable: "Новый", "Принят", etc.
+    statusCode: string;   // machine code: "NEW", "ACCEPTED", etc.
     coverLetter?: string;
     createdAt: string;
 }
@@ -82,7 +81,9 @@ export default function JobSeekerApplicationsPage() {
         try {
             setIsLoading(true);
             const data = await applicationService.getMy();
-            setApplications(Array.isArray(data) ? (data as unknown as Application[]) : []);
+            const sorted = (Array.isArray(data) ? (data as unknown as Application[]) : [])
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            setApplications(sorted);
         } catch {
             toast.error("Не удалось загрузить заявки");
         } finally {
@@ -90,10 +91,12 @@ export default function JobSeekerApplicationsPage() {
         }
     };
 
+    const getCode = (app: Application) => app.statusCode ?? app.statusName;
+
     const filterApplications = () => {
         let filtered = applications;
         if (selectedStatus !== "all") {
-            filtered = filtered.filter((app) => app.statusName === selectedStatus);
+            filtered = filtered.filter((app) => getCode(app) === selectedStatus);
         }
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase();
@@ -108,18 +111,16 @@ export default function JobSeekerApplicationsPage() {
 
     const handleWithdraw = async (applicationId: number) => {
         if (!confirm("Вы уверены, что хотите отозвать заявку?")) return;
-        // Optimistic: update status immediately
-        const prevStatus = applications.find(a => a.id === applicationId)?.statusName ?? APPLICATION_STATUS.NEW;
-        setApplications(prev =>
-            prev.map(a => a.id === applicationId ? { ...a, statusName: APPLICATION_STATUS.WITHDRAWN } : a)
+        const prevCode = applications.find(a => a.id === applicationId)?.statusCode ?? APPLICATION_STATUS.NEW;
+        setApplications(list =>
+            list.map(a => a.id === applicationId ? { ...a, statusCode: APPLICATION_STATUS.WITHDRAWN } : a)
         );
         try {
             await applicationService.withdraw(applicationId);
             toast.success("Заявка отозвана");
         } catch {
-            // Rollback
-            setApplications(prev =>
-                prev.map(a => a.id === applicationId ? { ...a, statusName: prevStatus } : a)
+            setApplications(list =>
+                list.map(a => a.id === applicationId ? { ...a, statusCode: prevCode } : a)
             );
             toast.error("Не удалось отозвать заявку");
         }
@@ -135,14 +136,16 @@ export default function JobSeekerApplicationsPage() {
 
     const statusCounts = {
         all: applications.length,
-        [APPLICATION_STATUS.NEW]: applications.filter((a) => a.statusName === APPLICATION_STATUS.NEW).length,
-        [APPLICATION_STATUS.REJECTED]: applications.filter((a) => a.statusName === APPLICATION_STATUS.REJECTED).length,
-        [APPLICATION_STATUS.WITHDRAWN]: applications.filter((a) => a.statusName === APPLICATION_STATUS.WITHDRAWN).length,
+        [APPLICATION_STATUS.NEW]: applications.filter((a) => getCode(a) === APPLICATION_STATUS.NEW).length,
+        [APPLICATION_STATUS.ACCEPTED]: applications.filter((a) => getCode(a) === APPLICATION_STATUS.ACCEPTED).length,
+        [APPLICATION_STATUS.REJECTED]: applications.filter((a) => getCode(a) === APPLICATION_STATUS.REJECTED).length,
+        [APPLICATION_STATUS.WITHDRAWN]: applications.filter((a) => getCode(a) === APPLICATION_STATUS.WITHDRAWN).length,
     };
 
     const statusFilters = [
         { value: "all", label: "Все", icon: "📋" },
-        { value: APPLICATION_STATUS.NEW, label: "Активные", icon: getStatusIcon(APPLICATION_STATUS.NEW) },
+        { value: APPLICATION_STATUS.NEW, label: "На рассмотрении", icon: getStatusIcon(APPLICATION_STATUS.NEW) },
+        { value: APPLICATION_STATUS.ACCEPTED, label: "Принятые", icon: getStatusIcon(APPLICATION_STATUS.ACCEPTED) },
         { value: APPLICATION_STATUS.REJECTED, label: "Отклонённые", icon: getStatusIcon(APPLICATION_STATUS.REJECTED) },
         { value: APPLICATION_STATUS.WITHDRAWN, label: "Отозванные", icon: getStatusIcon(APPLICATION_STATUS.WITHDRAWN) },
     ];
@@ -245,62 +248,80 @@ export default function JobSeekerApplicationsPage() {
                 ) : (
                     <div className="space-y-4">
                         <AnimatePresence mode="popLayout">
-                            {filteredApplications.map((app, index) => (
-                                <motion.div
-                                    key={app.id}
-                                    initial={{ opacity: 0, y: 16 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, x: -60 }}
-                                    transition={{ delay: index * 0.04 }}
-                                    whileHover={{ y: -2 }}
-                                    className="card p-6"
-                                >
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-3 mb-3">
-                                                {/* Avatar */}
-                                                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-white font-bold text-base"
-                                                    style={{ background: "linear-gradient(135deg, rgb(99,102,241), rgb(139,92,246))" }}>
-                                                    {app.vacancyTitle.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="font-semibold text-base truncate" style={{ color: "rgb(var(--text-1))" }}>
-                                                        {app.vacancyTitle}
-                                                    </h3>
-                                                    <div className="flex items-center gap-1.5 text-sm" style={{ color: "rgb(var(--text-3))" }}>
-                                                        <Building2 className="w-3.5 h-3.5" />
-                                                        <span className="truncate">{app.companyName}</span>
+                            {filteredApplications.map((app, index) => {
+                                const code = getCode(app);
+                                return (
+                                    <motion.div
+                                        key={app.id}
+                                        initial={{ opacity: 0, y: 16 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, x: -60 }}
+                                        transition={{ delay: index * 0.04 }}
+                                        whileHover={{ y: -2 }}
+                                        className="card p-6"
+                                    >
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-white font-bold text-base"
+                                                        style={{ background: "linear-gradient(135deg, rgb(99,102,241), rgb(139,92,246))" }}>
+                                                        {app.vacancyTitle.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-semibold text-base truncate" style={{ color: "rgb(var(--text-1))" }}>
+                                                            {app.vacancyTitle}
+                                                        </h3>
+                                                        <div className="flex items-center gap-1.5 text-sm" style={{ color: "rgb(var(--text-3))" }}>
+                                                            <Building2 className="w-3.5 h-3.5" />
+                                                            <span className="truncate">{app.companyName}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="flex flex-wrap items-center gap-3 text-sm" style={{ color: "rgb(var(--text-3))" }}>
-                                                {app.location && (
+                                                <div className="flex flex-wrap items-center gap-3 text-sm" style={{ color: "rgb(var(--text-3))" }}>
+                                                    {app.location && (
+                                                        <div className="flex items-center gap-1">
+                                                            <MapPin className="w-3.5 h-3.5" />
+                                                            <span>{app.location}</span>
+                                                        </div>
+                                                    )}
+                                                    {app.salary && (
+                                                        <span className="badge badge-emerald">
+                                                            {app.salary.toLocaleString()} ₽
+                                                        </span>
+                                                    )}
                                                     <div className="flex items-center gap-1">
-                                                        <MapPin className="w-3.5 h-3.5" />
-                                                        <span>{app.location}</span>
+                                                        <Clock className="w-3.5 h-3.5" />
+                                                        <span>{formatDate(app.createdAt)}</span>
                                                     </div>
-                                                )}
-                                                {app.salary && (
-                                                    <span className="badge badge-emerald">
-                                                        {app.salary.toLocaleString()} ₽
+                                                    <span className={getStatusBadgeClasses(code)}>
+                                                        {getStatusIcon(code)} {app.statusName}
                                                     </span>
-                                                )}
-                                                <div className="flex items-center gap-1">
-                                                    <Clock className="w-3.5 h-3.5" />
-                                                    <span>{formatDate(app.createdAt)}</span>
                                                 </div>
-                                                <span className={getStatusBadgeClasses(app.statusName)}>
-                                                    {getStatusIcon(app.statusName)} {app.statusName}
-                                                </span>
                                             </div>
-                                        </div>
 
-                                        {/* Actions */}
-                                        <div className="flex items-center gap-2 shrink-0">
-                                            {app.coverLetter && (
+                                            {/* Actions */}
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                {app.coverLetter && (
+                                                    <button
+                                                        onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}
+                                                        className="p-2 rounded-xl transition-all"
+                                                        style={{ color: "rgb(var(--text-3))" }}
+                                                        onMouseEnter={e => {
+                                                            (e.currentTarget as HTMLButtonElement).style.color = "rgb(99,102,241)";
+                                                            (e.currentTarget as HTMLButtonElement).style.background = "rgba(99,102,241,0.1)";
+                                                        }}
+                                                        onMouseLeave={e => {
+                                                            (e.currentTarget as HTMLButtonElement).style.color = "rgb(var(--text-3))";
+                                                            (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                                                        }}
+                                                        title="Сопроводительное письмо"
+                                                    >
+                                                        <MessageSquare className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                                 <button
-                                                    onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}
+                                                    onClick={() => router.push(`/jobseeker/vacancies/${app.vacancyId}`)}
                                                     className="p-2 rounded-xl transition-all"
                                                     style={{ color: "rgb(var(--text-3))" }}
                                                     onMouseEnter={e => {
@@ -311,64 +332,52 @@ export default function JobSeekerApplicationsPage() {
                                                         (e.currentTarget as HTMLButtonElement).style.color = "rgb(var(--text-3))";
                                                         (e.currentTarget as HTMLButtonElement).style.background = "transparent";
                                                     }}
-                                                    title="Сопроводительное письмо"
+                                                    title="Просмотреть вакансию"
                                                 >
-                                                    <MessageSquare className="w-4 h-4" />
+                                                    <Eye className="w-4 h-4" />
                                                 </button>
-                                            )}
-                                            <button
-                                                onClick={() => router.push(`/jobseeker/vacancies/${app.vacancyId}`)}
-                                                className="p-2 rounded-xl transition-all"
-                                                style={{ color: "rgb(var(--text-3))" }}
-                                                onMouseEnter={e => {
-                                                    (e.currentTarget as HTMLButtonElement).style.color = "rgb(99,102,241)";
-                                                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(99,102,241,0.1)";
-                                                }}
-                                                onMouseLeave={e => {
-                                                    (e.currentTarget as HTMLButtonElement).style.color = "rgb(var(--text-3))";
-                                                    (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                                                }}
-                                                title="Просмотреть вакансию"
-                                            >
-                                                <Eye className="w-4 h-4" />
-                                            </button>
 
-                                            {app.statusName === APPLICATION_STATUS.NEW && (
-                                                <button
-                                                    onClick={() => handleWithdraw(app.id)}
-                                                    className="p-2 rounded-xl text-[rgb(var(--text-3))] hover:text-red-400 hover:bg-red-500/10 transition-all"
-                                                    title="Отозвать заявку"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            )}
+                                                {code === APPLICATION_STATUS.NEW && (
+                                                    <button
+                                                        onClick={() => handleWithdraw(app.id)}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all"
+                                                        style={{ color: "rgb(239,68,68)", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}
+                                                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.2)"; }}
+                                                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.1)"; }}
+                                                        title="Отозвать заявку"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                        Отозвать
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <AnimatePresence>
-                                        {expandedId === app.id && app.coverLetter && (
-                                            <motion.div
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: "auto" }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                                className="overflow-hidden"
-                                            >
-                                                <div className="mt-4 pt-4 border-t" style={{ borderColor: "var(--card-border)" }}>
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <MessageSquare className="w-4 h-4" style={{ color: "rgb(99,102,241)" }} />
-                                                        <span className="text-sm font-medium" style={{ color: "rgb(var(--text-2))" }}>
-                                                            Сопроводительное письмо
-                                                        </span>
+                                        <AnimatePresence>
+                                            {expandedId === app.id && app.coverLetter && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: "auto" }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="mt-4 pt-4 border-t" style={{ borderColor: "var(--card-border)" }}>
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <MessageSquare className="w-4 h-4" style={{ color: "rgb(99,102,241)" }} />
+                                                            <span className="text-sm font-medium" style={{ color: "rgb(var(--text-2))" }}>
+                                                                Сопроводительное письмо
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm whitespace-pre-wrap leading-relaxed" style={{ color: "rgb(var(--text-2))" }}>
+                                                            {app.coverLetter}
+                                                        </p>
                                                     </div>
-                                                    <p className="text-sm whitespace-pre-wrap leading-relaxed" style={{ color: "rgb(var(--text-2))" }}>
-                                                        {app.coverLetter}
-                                                    </p>
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </motion.div>
-                            ))}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                );
+                            })}
                         </AnimatePresence>
                     </div>
                 )}

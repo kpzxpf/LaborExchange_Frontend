@@ -9,7 +9,7 @@ import {
     SearchPageResponse, PageResponse,
     AiResumeRequestDto, AiResumeResponseDto,
     WorkExperienceDto,
-    VacancyStatsDto, EmployerDashboardDto, ResumeStatsDto,
+    VacancyStatsDto, EmployerDashboardDto, ResumeStatsDto, SalaryStatsDto,
 } from '@/types';
 
 const api = axios.create({
@@ -247,6 +247,8 @@ export const statsService = {
         api.get<VacancyStatsDto>(`/api/stats/vacancies/${vacancyId}`).then(r => r.data),
     getResumeStats: (resumeId: number): Promise<ResumeStatsDto> =>
         api.get<ResumeStatsDto>(`/api/stats/resumes/${resumeId}`).then(r => r.data),
+    getSalaryStats: (params: { title?: string; location?: string; employmentType?: string }): Promise<SalaryStatsDto> =>
+        api.get<SalaryStatsDto>('/api/stats/salary', { params }).then(r => r.data),
 };
 
 // ======================== CHAT ========================
@@ -381,6 +383,18 @@ export const salaryService = {
 export const suggestService = {
   suggest: (q: string, type: 'vacancy' | 'company' | 'location' | 'skill' = 'vacancy') =>
     api.get('/api/search/suggest', { params: { q, type } }),
+};
+
+// ======================== NOTIFICATIONS ========================
+export const notificationService = {
+  getMyNotifications: () =>
+    api.get('/api/notifications/my').then(r => r.data),
+
+  getUnreadCount: () =>
+    api.get('/api/notifications/unread-count').then(r => r.data as number),
+
+  markAllRead: () =>
+    api.put('/api/notifications/read-all'),
 };
 
 // ======================== BULK VACANCY OPERATIONS ========================

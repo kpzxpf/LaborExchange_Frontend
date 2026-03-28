@@ -6,8 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Menu, X, Briefcase, User, LogOut, Zap, Sun, Moon,
-    Search, Settings, Bell, ShieldCheck, ChevronDown,
-    BarChart2, Heart, MessageSquare, LayoutDashboard,
+    Search, Settings, Bell, ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -18,42 +17,33 @@ import NotificationBell from "@/components/ui/NotificationBell";
 type NavLink = { href: string; label: string };
 
 // ─── Role-based nav config ───────────────────────────────────────────────────
-const NAV: Record<string, { primary: NavLink[]; more: NavLink[] }> = {
-    EMPLOYER: {
-        primary: [
-            { href: "/employer/dashboard",    label: "Панель" },
-            { href: "/employer/vacancies",    label: "Вакансии" },
-            { href: "/employer/resumes",      label: "Кандидаты" },
-            { href: "/employer/applications", label: "Отклики" },
-        ],
-        more: [
-            { href: "/employer/favorites", label: "Избранное" },
-            { href: "/messages",           label: "Сообщения" },
-            { href: "/employer/stats",     label: "Статистика" },
-        ],
-    },
-    JOBSEEKER: {
-        primary: [
-            { href: "/jobseeker/vacancies",        label: "Поиск работы" },
-            { href: "/jobseeker/recommendations",  label: "Для вас" },
-            { href: "/jobseeker/resumes",          label: "Резюме" },
-            { href: "/jobseeker/applications",     label: "Отклики" },
-        ],
-        more: [
-            { href: "/jobseeker/dashboard",  label: "Панель" },
-            { href: "/jobseeker/favorites",  label: "Избранное" },
-            { href: "/messages",             label: "Сообщения" },
-            { href: "/jobseeker/stats",      label: "Статистика" },
-        ],
-    },
-    ADMIN: {
-        primary: [
-            { href: "/admin/dashboard", label: "Панель" },
-            { href: "/admin/users",     label: "Пользователи" },
-            { href: "/admin/vacancies", label: "Вакансии" },
-        ],
-        more: [],
-    },
+const NAV: Record<string, NavLink[]> = {
+    EMPLOYER: [
+        { href: "/employer/dashboard",    label: "Панель" },
+        { href: "/employer/vacancies",    label: "Вакансии" },
+        { href: "/employer/resumes",      label: "Кандидаты" },
+        { href: "/employer/applications", label: "Отклики" },
+        { href: "/employer/company",      label: "Компания" },
+        { href: "/messages",              label: "Сообщения" },
+        { href: "/employer/favorites",    label: "Избранное" },
+        { href: "/employer/stats",        label: "Статистика" },
+    ],
+    JOBSEEKER: [
+        { href: "/jobseeker/vacancies",       label: "Поиск работы" },
+        { href: "/jobseeker/recommendations", label: "Для вас" },
+        { href: "/jobseeker/resumes",         label: "Резюме" },
+        { href: "/jobseeker/applications",    label: "Отклики" },
+        { href: "/messages",                  label: "Сообщения" },
+        { href: "/jobseeker/alerts",          label: "Оповещения" },
+        { href: "/jobseeker/favorites",       label: "Избранное" },
+        { href: "/jobseeker/salary",          label: "Зарплаты" },
+        { href: "/jobseeker/stats",           label: "Статистика" },
+    ],
+    ADMIN: [
+        { href: "/admin/dashboard", label: "Панель" },
+        { href: "/admin/users",     label: "Пользователи" },
+        { href: "/admin/vacancies", label: "Вакансии" },
+    ],
 };
 
 // ─── Shared hover style helpers ───────────────────────────────────────────────
@@ -93,69 +83,6 @@ function NavItem({ href, label, active }: NavLink & { active: boolean }) {
     );
 }
 
-function MoreDropdown({ links, isActive }: { links: NavLink[]; isActive: (h: string) => boolean }) {
-    const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-    const hasActive = links.some(l => isActive(l.href));
-
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-        };
-        document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
-    }, []);
-
-    return (
-        <div className="relative" ref={ref}>
-            <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setOpen(v => !v)}
-                className="flex items-center gap-0.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
-                style={hasActive ? activeStyle : inactiveStyle}
-                {...(!hasActive ? hoverItem : {})}
-            >
-                Ещё
-                <ChevronDown
-                    className="h-3.5 w-3.5 transition-transform duration-200"
-                    style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
-                />
-            </motion.button>
-
-            <AnimatePresence>
-                {open && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                        transition={{ duration: 0.12 }}
-                        className="absolute left-0 mt-2 w-44 rounded-xl overflow-hidden z-50"
-                        style={{
-                            background: "rgb(var(--card-bg))",
-                            border: "1px solid var(--card-border)",
-                            boxShadow: "var(--card-shadow-hover)",
-                        }}
-                    >
-                        {links.map(link => (
-                            <Link key={link.href} href={link.href} onClick={() => setOpen(false)}>
-                                <div
-                                    className="px-4 py-2.5 text-sm font-medium transition-all duration-150 cursor-pointer"
-                                    style={isActive(link.href)
-                                        ? { color: "rgb(99,102,241)", background: "rgba(99,102,241,0.08)" }
-                                        : { color: "rgb(var(--text-2))" }
-                                    }
-                                    {...(!isActive(link.href) ? hoverItem : {})}
-                                >
-                                    {link.label}
-                                </div>
-                            </Link>
-                        ))}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
-}
 
 function UserMenu({
     profileHref,
@@ -285,15 +212,12 @@ const Header = () => {
                         </span>
                     </Link>
 
-                    {/* Desktop Nav: 4 primary + "Ещё" dropdown */}
+                    {/* Desktop Nav */}
                     {isAuthenticated && (
-                        <nav className="hidden md:flex items-center gap-0.5 mx-4">
-                            {nav.primary.map(link => (
+                        <nav className="hidden md:flex items-center gap-0.5 mx-4 overflow-x-auto">
+                            {nav.map(link => (
                                 <NavItem key={link.href} {...link} active={isActive(link.href)} />
                             ))}
-                            {nav.more.length > 0 && (
-                                <MoreDropdown links={nav.more} isActive={isActive} />
-                            )}
                         </nav>
                     )}
 
@@ -397,7 +321,7 @@ const Header = () => {
                         <div className="px-4 py-4 space-y-1">
                             {isAuthenticated ? (
                                 <>
-                                    {[...nav.primary, ...nav.more].map(link => (
+                                    {nav.map(link => (
                                         <Link key={link.href} href={link.href} onClick={() => setIsMenuOpen(false)}>
                                             <div
                                                 className="block px-4 py-2.5 rounded-lg text-sm font-medium transition-all"

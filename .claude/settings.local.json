@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /c/Users/vlzhn/IdeaProjects/LaborExchange_Frontend && npx tsc --noEmit 2>&1)"
+    ]
+  }
+}

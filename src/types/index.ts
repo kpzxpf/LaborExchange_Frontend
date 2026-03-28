@@ -299,6 +299,19 @@ export interface EmployerDashboardDto {
     dailyViews: DailyPointDto[];
 }
 
+// ======================== SALARY ANALYTICS ========================
+export interface SalaryStatsDto {
+    query?: string | null;
+    location?: string | null;
+    medianSalary: number | null;
+    averageSalary: number | null;
+    minSalary: number | null;
+    maxSalary: number | null;
+    p25Salary: number | null;
+    p75Salary: number | null;
+    totalVacancies: number;
+}
+
 // ======================== API ERROR ========================
 export interface ApiError {
     message?: string;

@@ -356,20 +356,49 @@
     }
 
     /* Inputs */
-    .input-field {
+    .input-field,
+    .input {
         @apply w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200;
         background: var(--input-bg);
         border: 1px solid var(--input-border);
         color: rgb(var(--input-color));
     }
-    .input-field::placeholder {
+    .input-field::placeholder,
+    .input::placeholder {
         color: var(--input-placeholder);
     }
-    .input-field:focus {
+    .input-field:focus,
+    .input:focus {
         outline: none;
         border-color: rgba(99, 102, 241, 0.6);
         background: var(--input-bg);
         box-shadow: var(--input-focus-shadow);
+    }
+
+    /* Select dark-theme fix */
+    select.input-field,
+    select.input {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
+        padding-right: 40px;
+        cursor: pointer;
+    }
+    .dark select,
+    .dark select.input-field,
+    .dark select.input {
+        color-scheme: dark;
+    }
+    select option {
+        background: var(--input-bg, white);
+        color: rgb(var(--input-color, 15 23 42));
+    }
+    .dark select option {
+        background: rgb(15, 23, 42);
+        color: rgb(241, 245, 249);
     }
 
     /* Badges */

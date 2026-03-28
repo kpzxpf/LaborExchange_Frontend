@@ -114,7 +114,8 @@ export default function ViewResumePage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!loading && !isAuthenticated) { router.push("/auth/login"); return; }
+        if (loading) return;
+        if (!isAuthenticated) { router.push("/auth/login"); return; }
         if (params.id) fetchAll();
     }, [params.id, isAuthenticated, loading, router]);
 

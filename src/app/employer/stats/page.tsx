@@ -120,8 +120,11 @@ export default function EmployerStatsPage() {
         REJECTED: "rgb(239,68,68)", WITHDRAWN: "rgb(245,158,11)",
     };
 
+    const STATUS_LABELS_RU: Record<string, string> = {
+        NEW: "Новые", ACCEPTED: "Принятые", REJECTED: "Отклонённые", WITHDRAWN: "Отозванные",
+    };
     const appStatusData = Object.entries(dashboard.applicationsByStatus ?? {}).map(([status, count]) => ({
-        name: status, value: count, fill: statusColors[status] ?? "rgb(var(--text-3))",
+        name: STATUS_LABELS_RU[status] ?? status, value: count, fill: statusColors[status] ?? "rgb(var(--text-3))",
     }));
 
     return (

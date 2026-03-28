@@ -30,6 +30,20 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
             reconnectDelay: 5000,
             onConnect: () => {
                 setIsConnected(true);
+                // Process callbacks that were queued before connection was ready
+                subscribersRef.current.forEach((callbacks, conversationId) => {
+                    callbacks.forEach((callback) => {
+                        client.subscribe(`/topic/conversation/${conversationId}`, (frame) => {
+                            try {
+                                const msg: MessageDto = JSON.parse(frame.body);
+                                callback(msg);
+                            } catch {
+                                // ignore parse errors
+                            }
+                        });
+                    });
+                });
+                subscribersRef.current.clear();
             },
             onDisconnect: () => {
                 setIsConnected(false);

@@ -63,7 +63,7 @@ export default function NotificationsPage() {
                                 Уведомления
                             </h1>
                             <p className="text-sm" style={{ color: "rgb(var(--text-3))" }}>
-                                {notifications.length} всего
+                                {notifications.length} за последние 10 дней
                             </p>
                         </div>
                     </div>

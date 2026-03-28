@@ -64,7 +64,8 @@ export default function VacancyDetailPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!loading && !isAuthenticated) {
+        if (loading) return;
+        if (!isAuthenticated) {
             router.push("/auth/login");
             return;
         }
